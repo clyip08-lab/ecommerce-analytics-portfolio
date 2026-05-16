@@ -1,43 +1,50 @@
 # streamlit_app/db.py
 # ============================================================
-# Database connection — shared across all pages
+# Data loader — CSV-based for Streamlit Cloud deployment
 # ============================================================
 
 import pandas as pd
-from sqlalchemy import create_engine, text
-from dotenv import load_dotenv
 import os
 import streamlit as st
 
-load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
+# Works on both local and Streamlit Cloud
+BASE_DIR   = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+EXPORT_DIR = os.path.join(BASE_DIR, "data", "exports")
 
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_PORT = os.getenv("DB_PORT", "3306")
-DB_USER = os.getenv("DB_USER", "root")
-DB_PASS = os.getenv("DB_PASSWORD", "")
-DB_NAME = os.getenv("DB_NAME", "ecommerce_analytics")
-
-@st.cache_resource
-def get_engine():
-    """Create DB engine — cached so it's only created once."""
-    conn_str = (
-        f"mysql+mysqlconnector://{DB_USER}:{DB_PASS}"
-        f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-    )
-    return create_engine(conn_str, echo=False)
-
-@st.cache_data(ttl=600)
-def run_query(query: str) -> pd.DataFrame:
-    """Run SQL query → return DataFrame. Cached for 10 minutes."""
-    engine = get_engine()
-    with engine.connect() as conn:
-        result = conn.execute(text(query))
-        rows   = result.fetchall()
-        cols   = result.keys()
-        df     = pd.DataFrame(rows, columns=cols)
+@st.cache_data
+def load_csv(filename: str) -> pd.DataFrame:
+    """Load a CSV export file directly."""
+    path = os.path.join(EXPORT_DIR, filename)
+    if os.path.exists(path):
+        df = pd.read_csv(path)
         for col in df.columns:
             try:
                 df[col] = pd.to_numeric(df[col])
             except (ValueError, TypeError):
                 pass
         return df
+    st.warning(f"⚠️ File not found: {filename}")
+    return pd.DataFrame()
+
+@st.cache_data
+def run_query(query: str) -> pd.DataFrame:
+    """
+    Map SQL view names → pre-exported CSV files.
+    No MySQL connection needed.
+    """
+    q = query.lower()
+
+    if "vw_monthly_revenue"    in q: return load_csv("analysis_monthly.csv")
+    if "vw_conversion_funnel"  in q: return load_csv("analysis_funnel.csv")
+    if "vw_brand_performance"  in q: return load_csv("analysis_brands.csv")
+    if "vw_product_performance"in q: return load_csv("analysis_categories.csv")
+    if "vw_daily_kpis"         in q: return load_csv("analysis_daily.csv")
+    if "vw_user_retention"     in q: return load_csv("analysis_rfm_segments.csv")
+    if "dim_sessions"          in q: return load_csv("dim_sessions.csv")
+    if "dim_products"          in q: return load_csv("dim_products.csv")
+
+    # Inline queries (hourly, funnel counts etc) → use fact_events CSV
+    if "fact_events"           in q: return load_csv("fact_events.csv")
+
+    st.warning(f"⚠️ No CSV mapped for this query.")
+    return pd.DataFrame()
