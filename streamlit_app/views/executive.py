@@ -27,21 +27,34 @@ def show():
 # ── KPI Cards ── (FIXED)
     total_rev   = df_monthly["total_revenue"].sum()
     total_ord   = df_monthly["total_orders"].sum()
-    avg_aov     = df_monthly["avg_order_value"].mean()
-    total_users = df_monthly["unique_users"].sum()
-
+    avg_aov = total_rev / total_ord if total_ord > 0 else 0
+    latest_users = df_monthly.sort_values("month").iloc[-1]["unique_users"]
     # ✅ 直接从 funnel CSV 计算转化率
-    avg_conv = 0
-    if not df_funnel.empty and "event_type" in df_funnel.columns:
-        views     = df_funnel.loc[
-            df_funnel["event_type"] == "view", "unique_users"
-        ].values
-        purchases = df_funnel.loc[
-            df_funnel["event_type"] == "purchase", "unique_users"
-        ].values
+avg_conv = 0
+if not df_funnel.empty and "event_type" in df_funnel.columns:
+    funnel_map = (
+        df_funnel
+        .set_index("event_type")["unique_users"]
+        .to_dict()
+    )
 
-        if len(views) > 0 and len(purchases) > 0 and views[0] > 0:
-            avg_conv = (purchases[0] / views[0]) * 100
+    views = funnel_map.get("view", 0)
+    carts = funnel_map.get("cart", 0)
+    purchases = funnel_map.get("purchase", 0)
+
+    if views > 0:
+        avg_conv = (purchases / views) * 100
+        view_to_cart = (carts / views) * 100
+    else:
+        view_to_cart = 0
+
+    if carts > 0:
+        cart_to_purch = (purchases / carts) * 100
+    else:
+        cart_to_purch = 0
+else:
+    view_to_cart = 0
+    cart_to_purch = 0
 
     # ✅ 也计算 view→cart 和 cart→purchase
     view_to_cart = 0
@@ -61,7 +74,7 @@ def show():
     c2.metric("🛍️ Total Orders",    f"{total_ord:,.0f}")
     c3.metric("💳 Avg Order Value", f"${avg_aov:,.2f}")
     c4.metric("🎯 Overall Conv.",   f"{avg_conv:.2f}%")
-    c5.metric("👥 Unique Users",    f"{total_users:,.0f}")
+    c5.metric("👥 Latest Month Active Users",    f"{latest_users:,.0f}")
 
     # ✅ 额外一行显示漏斗细节
     st.markdown("---")
@@ -96,7 +109,7 @@ def show():
 
     with col1:
         st.subheader("🔽 Conversion Funnel")
-        df_f = load_csv("analysis_funnel.csv")
+        df_f = df_funnel.copy()
         if not df_f.empty and "event_type" in df_f.columns:
             order_map = {"view": 0, "cart": 1, "purchase": 2}
             df_f["order"] = df_f["event_type"].map(order_map)
