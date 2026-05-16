@@ -36,17 +36,17 @@ st.sidebar.caption("Built with Python + MySQL + Streamlit")
 
 # ── Route to pages ──
 if page == "📊 Executive Overview":
-    from pages import executive
+    from views import executive
     executive.show()
 
 elif page == "📦 Product & Brand":
-    from pages import product_brand
+    from views import product_brand
     product_brand.show()
 
 elif page == "👥 Customer Segments":
-    from pages import customer_segments
+    from views import customer_segments
     customer_segments.show()
 
 elif page == "🔄 Retention & Cohort":
-    from pages import retention_cohort
+    from views import retention_cohort
     retention_cohort.show()
