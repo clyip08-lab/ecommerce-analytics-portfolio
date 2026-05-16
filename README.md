@@ -6,6 +6,9 @@
 
 > Showcasing data engineering, SQL analytics, BI dashboarding, and product analytics thinking.
 
+## 📊 Live Demo
+🔗https://clyip08-lab-ecommerce-analytics-portfol-streamlit-appapp-g6xeev.streamlit.app/
+---
 \## 📌 Project Overview
 
 
