@@ -63,12 +63,16 @@ KPI Semantic Layer       ← 6 SQL views = single source of truth (Phase 5)
 ---
 
 ## 🗂️ Project Structure
+
+```
 ecommerce-analytics-portfolio/
+│
 ├── data/
-│   ├── raw/              ← Original CSVs (not in Git — too large)
-│   ├── processed/        ← Cleaned dataset
-│   ├── samples/          ← Stratified user sample
-│   └── exports/          ← Star schema CSVs + analysis outputs
+│   ├── raw/                          ← Original CSVs (not in Git)
+│   ├── processed/                    ← Cleaned dataset
+│   ├── samples/                      ← Stratified user sample
+│   └── exports/                      ← Star schema + analysis CSVs
+│
 ├── notebooks/
 │   ├── phase1_data_understanding.ipynb
 │   ├── phase2_cleaning_features.ipynb
@@ -77,6 +81,7 @@ ecommerce-analytics-portfolio/
 │   ├── phase5_kpi_semantic_layer.ipynb
 │   ├── phase6_core_analysis.ipynb
 │   └── phase7_advanced_analytics.ipynb
+│
 ├── sql/
 │   ├── 01_schema_check.sql
 │   ├── 02_revenue_by_month.sql
@@ -89,6 +94,7 @@ ecommerce-analytics-portfolio/
 │   ├── vw_user_retention.sql
 │   ├── vw_daily_kpis.sql
 │   └── vw_brand_performance.sql
+│
 ├── streamlit_app/
 │   ├── app.py
 │   ├── db.py
@@ -97,14 +103,17 @@ ecommerce-analytics-portfolio/
 │       ├── product_brand.py
 │       ├── customer_segments.py
 │       └── retention_cohort.py
+│
 ├── dashboard/
 │   └── ecommerce_dashboard.pbix
+│
 ├── reports/
-│   └── figures/          ← 15 exported HTML charts
+│   └── figures/                      ← 15 exported HTML charts
+│
 ├── .gitignore
 ├── requirements.txt
 └── README.md
----
+```
 
 ## 🛠️ Tech Stack
 
