@@ -196,8 +196,8 @@ streamlit run streamlit_app/app.py
 
 Built by **YIP CHEN LENG**  
 Targeting: BI Analyst / Data Analyst / E-Commerce Analyst roles  
-📧 your.email@gmail.com  
-🔗 [LinkedIn](https://linkedin.com/in/yourprofile)
+📧 clyip08@gmail.com  
+🔗https://www.linkedin.com/in/yipcl
 
 ---
 
