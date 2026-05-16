@@ -54,7 +54,7 @@ def show():
                     color_discrete_sequence = colors,
                 )
                 fig1.update_layout(height=380, template="plotly_white")
-                st.plotly_chart(fig1, use_container_width=True)
+                st.plotly_chart(fig1, width='stretch')
 
         with col2:
             st.subheader("💰 Revenue by Segment")
@@ -74,7 +74,7 @@ def show():
                     textposition = "outside"
                 )
                 fig2.update_layout(height=380, showlegend=False)
-                st.plotly_chart(fig2, use_container_width=True)
+                st.plotly_chart(fig2, width='stretch')
 
     st.markdown("---")
 
@@ -101,7 +101,7 @@ def show():
             )
             fig3.update_layout(height=350,
                                legend=dict(orientation="h", y=-0.2))
-            st.plotly_chart(fig3, use_container_width=True)
+            st.plotly_chart(fig3, width='stretch')
         else:
             # Show as bar chart if no monthly breakdown
             val_col = next((c for c in df_conv.columns
@@ -114,7 +114,7 @@ def show():
                 color_discrete_sequence = ["#4361ee","#7209b7","#f72585"],
             )
             fig3.update_layout(height=350, template="plotly_white")
-            st.plotly_chart(fig3, use_container_width=True)
+            st.plotly_chart(fig3, width='stretch')
 
     st.markdown("---")
 
@@ -161,7 +161,7 @@ def show():
                 xaxis    = dict(title="Period"),
                 yaxis    = dict(title="Cohort"),
             )
-            st.plotly_chart(fig4, use_container_width=True)
+            st.plotly_chart(fig4, width='stretch')
 
             m1_col = "Month 1"
             if m1_col in df_cohort.get(period_col, pd.Series()).values:
@@ -200,7 +200,7 @@ def show():
         st.dataframe(
             summary[["session_type","sessions",
                       "avg_events","avg_duration_min","avg_products"]],
-            use_container_width=True
+            width='stretch'
         )
     else:
         st.info("Session data not available on cloud deployment.")

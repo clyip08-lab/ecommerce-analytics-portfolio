@@ -66,7 +66,7 @@ def show():
         )
         fig1.update_traces(texttemplate="$%{text:,.0f}", textposition="outside")
         fig1.update_layout(height=420, showlegend=False)
-        st.plotly_chart(fig1, use_container_width=True)
+        st.plotly_chart(fig1, width='stretch')
 
     with col2:
         st.subheader("🎯 Brand Conversion Rates (%)")
@@ -81,7 +81,7 @@ def show():
             )
             fig2.update_traces(texttemplate="%{text:.2f}%", textposition="outside")
             fig2.update_layout(height=420, showlegend=False)
-            st.plotly_chart(fig2, use_container_width=True)
+            st.plotly_chart(fig2, width='stretch')
         else:
             st.info("Conversion rate column not found in brands CSV.")
 
@@ -100,7 +100,7 @@ def show():
                 color=cat_rev_col, color_continuous_scale="Blues",
             )
             fig3.update_layout(height=400, template="plotly_white")
-            st.plotly_chart(fig3, use_container_width=True)
+            st.plotly_chart(fig3, width='stretch')
 
     st.markdown("---")
 
@@ -138,4 +138,4 @@ def show():
                                hovermode="x unified")
             fig4.update_yaxes(title_text="Revenue ($)", secondary_y=False)
             fig4.update_yaxes(title_text="Cumulative %", secondary_y=True)
-            st.plotly_chart(fig4, use_container_width=True)
+            st.plotly_chart(fig4, width='stretch')

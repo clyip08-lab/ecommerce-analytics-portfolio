@@ -58,7 +58,7 @@ def show():
             )
             fig1.update_traces(texttemplate="%{text:,}", textposition="outside")
             fig1.update_layout(height=420, showlegend=False)
-            st.plotly_chart(fig1, use_container_width=True)
+            st.plotly_chart(fig1, width='stretch')
 
     with col2:
         st.subheader("💰 Revenue by RFM Segment")
@@ -69,7 +69,7 @@ def show():
                 color_continuous_scale="RdYlGn",
             )
             fig2.update_layout(height=420)
-            st.plotly_chart(fig2, use_container_width=True)
+            st.plotly_chart(fig2, width='stretch')
 
     st.markdown("---")
 
@@ -77,7 +77,7 @@ def show():
     st.subheader("📋 Segment Detail")
     st.dataframe(
         df_seg.sort_values(rev_col, ascending=False) if rev_col else df_seg,
-        use_container_width=True
+        width='stretch'
     )
 
     st.markdown("---")
@@ -100,6 +100,6 @@ def show():
                 template="plotly_white",
             )
             fig3.update_layout(height=380, xaxis_tickangle=-30)
-            st.plotly_chart(fig3, use_container_width=True)
+            st.plotly_chart(fig3, width='stretch')
     else:
         st.info("Funnel category data not available.")

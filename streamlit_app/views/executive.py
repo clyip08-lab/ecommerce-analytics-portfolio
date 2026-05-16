@@ -62,7 +62,7 @@ def show():
                       legend=dict(orientation="h", y=1.1), height=380)
     fig.update_yaxes(title_text="Revenue ($)", secondary_y=False)
     fig.update_yaxes(title_text="Total Orders", secondary_y=True)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
     # ── Two columns ──
     col1, col2 = st.columns(2)
@@ -81,7 +81,7 @@ def show():
                 marker   = dict(color=["#4361ee","#7209b7","#f72585"]),
             ))
             fig2.update_layout(height=350, template="plotly_white")
-            st.plotly_chart(fig2, use_container_width=True)
+            st.plotly_chart(fig2, width='stretch')
 
     with col2:
         st.subheader("⏰ Hourly Purchase Pattern")
@@ -93,7 +93,7 @@ def show():
                 template="plotly_white",
             )
             fig3.update_layout(height=350, showlegend=False)
-            st.plotly_chart(fig3, use_container_width=True)
+            st.plotly_chart(fig3, width='stretch')
 
     # ── Revenue by Day of Week ──
     st.subheader("🗓️ Revenue by Day of Week")
@@ -111,4 +111,4 @@ def show():
             template="plotly_white",
         )
         fig4.update_layout(height=320, showlegend=False)
-        st.plotly_chart(fig4, use_container_width=True)
+        st.plotly_chart(fig4, width='stretch')
