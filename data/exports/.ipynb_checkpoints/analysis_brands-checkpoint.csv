@@ -1,0 +1,11 @@
+brand,category_l1,unique_products,total_views,total_carts,total_purchases,total_revenue,avg_selling_price,conversion_rate
+apple,electronics,325,131192.0,9927.0,4394.0,3353158.92,763.12,3.35
+samsung,electronics,335,147358.0,11798.0,5119.0,1442674.68,281.83,3.47
+xiaomi,electronics,311,88734.0,4144.0,1579.0,290896.08,184.23,1.78
+huawei,electronics,109,33293.0,1445.0,610.0,127972.78,209.79,1.83
+samsung,appliances,219,22515.0,987.0,434.0,104779.15,241.43,1.93
+acer,computers,239,15969.0,454.0,198.0,100918.3,509.69,1.24
+lucente,unknown,719,24624.0,483.0,377.0,98394.3,260.99,1.53
+apple,computers,79,4094.0,105.0,58.0,96603.06,1665.57,1.42
+oppo,electronics,38,18176.0,929.0,409.0,96030.47,234.79,2.25
+lg,appliances,170,13063.0,492.0,172.0,63116.03,366.95,1.32

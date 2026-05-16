@@ -1,0 +1,8 @@
+segment,users,avg_recency,avg_frequency,avg_monetary,total_revenue,revenue_share
+😐 Needs Attention,5087,37.3,2.13,729.68,3711863.36,50.0
+🌱 Promising,4723,9.6,2.26,685.02,3235350.91,43.6
+💀 Lost,1870,47.1,1.2,88.21,164950.41,2.2
+💛 Loyal Customers,6,15.2,67.5,27374.42,164246.5,2.2
+⚠️  At Risk,10,31.3,31.1,11884.14,118841.39,1.6
+🏆 Champions,1,0.0,88.0,11094.36,11094.36,0.1
+😴 Cant Lose Them,1,38.0,50.0,10607.96,10607.96,0.1
