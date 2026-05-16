@@ -1,0 +1,43 @@
+# Virtual environment
+venv/
+
+# Raw data (too large for GitHub)
+data/raw/
+
+# Environment variables (NEVER commit passwords)
+.env
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Large processed files (optional — keep exports)
+data/samples/
+
+# Power BI temp files
+*.pbix.bak
+
+# Large datasets
+data/raw/
+data/processed/
+data/exports/
+
+# Power BI
+*.pbix
+
+# Environment
+venv/
+.env
+
+# Python cache
+__pycache__/
+*.pyc
