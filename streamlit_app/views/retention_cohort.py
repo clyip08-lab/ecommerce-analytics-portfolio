@@ -178,29 +178,34 @@ def show():
 
     st.markdown("---")
 
-    # ── Session comparison ──
+   # ── Session comparison ──
     st.subheader("⚖️ Session Behaviour Summary")
-    df_sess = load_csv("dim_sessions.csv")
+    df_sess = load_csv("analysis_sessions_summary.csv")
 
-    if not df_sess.empty and "session_converted" in df_sess.columns:
-        summary = (
-            df_sess.groupby("session_converted")
-            .agg(
-                sessions          = ("session_converted",    "count"),
-                avg_events        = ("session_event_count",  "mean"),
-                avg_duration_min  = ("session_duration_min", "mean"),
-                avg_products      = ("unique_products",       "mean"),
-            )
-            .reset_index()
+    if not df_sess.empty:
+        st.dataframe(df_sess, use_container_width=True)
+
+        # Visual comparison
+        metrics = ["avg_events","avg_duration_min","avg_products"]
+        labels  = ["Avg Events","Avg Duration (min)","Avg Products Viewed"]
+
+        fig = px.bar(
+            df_sess.melt(
+                id_vars    = "session_type",
+                value_vars = metrics,
+                var_name   = "metric",
+                value_name = "value",
+            ),
+            x        = "metric",
+            y        = "value",
+            color    = "session_type",
+            barmode  = "group",
+            labels   = {"metric":"Metric","value":"Average","session_type":"Session"},
+            color_discrete_sequence = ["#f72585","#4361ee"],
+            template = "plotly_white",
         )
-        summary["session_type"] = summary["session_converted"].map(
-            {1: "✅ Converted", 0: "❌ Not Converted"}
-        )
-        summary = summary.round(2)
-        st.dataframe(
-            summary[["session_type","sessions",
-                      "avg_events","avg_duration_min","avg_products"]],
-            width='stretch'
-        )
+        fig.update_layout(height=350, xaxis_tickangle=0)
+        fig.update_xaxes(tickvals=metrics, ticktext=labels)
+        st.plotly_chart(fig, width="stretch")
     else:
-        st.info("Session data not available on cloud deployment.")
+        st.info("Session summary data not available.")
