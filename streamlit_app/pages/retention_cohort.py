@@ -4,138 +4,203 @@ import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
-import os
-import sys
+import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from db import run_query
-
-EXPORT_DIR = r"C:\Users\yipch\ecommerce-analytics-portfolio\data\exports"
+from db import load_csv
 
 def show():
     st.title("🔄 Retention & Cohort Analysis")
     st.markdown("User retention, repeat purchase behaviour, and cohort tracking.")
     st.markdown("---")
 
-    # ── Retention Segments ──
-    df_ret = run_query("""
-        SELECT retention_segment,
-               COUNT(*) AS users
-        FROM vw_user_retention
-        GROUP BY retention_segment
-        ORDER BY users DESC
-    """)
+    # ── Load retention segments ──
+    df_seg = load_csv("analysis_rfm_segments.csv")
 
-    total = df_ret["users"].sum()
-    st.subheader("👥 Retention Segment Breakdown")
+    if not df_seg.empty:
+        # Find segment column dynamically
+        seg_col  = next((c for c in df_seg.columns
+                         if "segment" in c.lower()), df_seg.columns[0])
+        user_col = next((c for c in df_seg.columns
+                         if "user" in c.lower()), None)
+        rev_col  = next((c for c in df_seg.columns
+                         if "revenue" in c.lower()), None)
 
-    cols = st.columns(len(df_ret))
-    colors = ["#4361ee","#7209b7","#f72585","#4cc9f0"]
-    for i, (_, row) in enumerate(df_ret.iterrows()):
-        pct = row["users"] / total * 100
-        cols[i].metric(
-            row["retention_segment"],
-            f"{row['users']:,}",
-            f"{pct:.1f}% of users"
-        )
+        total = df_seg[user_col].sum() if user_col else 0
+
+        st.subheader("👥 Retention Segment Breakdown")
+        cols = st.columns(min(len(df_seg), 4))
+        colors = ["#4361ee","#7209b7","#f72585","#4cc9f0",
+                  "#3a0ca3","#560bad","#480ca8","#b5179e"]
+
+        for i, (_, row) in enumerate(df_seg.iterrows()):
+            if i >= len(cols):
+                break
+            users = row[user_col] if user_col else 0
+            pct   = users / total * 100 if total > 0 else 0
+            label = str(row[seg_col]).split()[-1]
+            cols[i].metric(label, f"{users:,.0f}", f"{pct:.1f}%")
+
+        st.markdown("---")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.subheader("🍩 Segment Distribution")
+            if user_col:
+                fig1 = px.pie(
+                    df_seg,
+                    names  = seg_col,
+                    values = user_col,
+                    hole   = 0.45,
+                    color_discrete_sequence = colors,
+                )
+                fig1.update_layout(height=380, template="plotly_white")
+                st.plotly_chart(fig1, use_container_width=True)
+
+        with col2:
+            st.subheader("💰 Revenue by Segment")
+            if rev_col:
+                fig2 = px.bar(
+                    df_seg.sort_values(rev_col, ascending=True),
+                    x           = rev_col,
+                    y           = seg_col,
+                    orientation = "h",
+                    color       = rev_col,
+                    color_continuous_scale = "Blues",
+                    text        = rev_col,
+                    template    = "plotly_white",
+                )
+                fig2.update_traces(
+                    texttemplate = "$%{text:,.0f}",
+                    textposition = "outside"
+                )
+                fig2.update_layout(height=380, showlegend=False)
+                st.plotly_chart(fig2, use_container_width=True)
 
     st.markdown("---")
 
-    col1, col2 = st.columns(2)
+    # ── Conversion funnel trend ──
+    st.subheader("📈 Monthly Conversion Rates")
+    df_conv = load_csv("analysis_funnel.csv")
 
-    with col1:
-        st.subheader("🍩 Retention Segments")
-        fig1 = px.pie(
-            df_ret, names="retention_segment", values="users",
-            hole=0.45, color_discrete_sequence=colors,
-        )
-        fig1.update_layout(height=380, template="plotly_white")
-        st.plotly_chart(fig1, use_container_width=True)
+    if not df_conv.empty:
+        # Check if it has monthly breakdown
+        month_col = next((c for c in df_conv.columns
+                          if "month" in c.lower()), None)
+        rate_cols = [c for c in df_conv.columns
+                     if "rate" in c.lower() or "pct" in c.lower()]
 
-    with col2:
-        st.subheader("📈 Monthly Conversion Rates")
-        df_conv = run_query(
-            "SELECT * FROM vw_conversion_funnel ORDER BY month"
-        )
-        fig2 = px.line(
-            df_conv, x="month",
-            y=["view_to_cart_rate","cart_to_purchase_rate","overall_conversion_rate"],
-            markers=True,
-            labels={"value":"Rate (%)","month":"Month","variable":"Stage"},
-            color_discrete_sequence=["#4361ee","#7209b7","#f72585"],
-            template="plotly_white",
-        )
-        fig2.update_layout(height=380, legend=dict(orientation="h", y=-0.2))
-        st.plotly_chart(fig2, use_container_width=True)
+        if month_col and rate_cols:
+            fig3 = px.line(
+                df_conv,
+                x       = month_col,
+                y       = rate_cols,
+                markers = True,
+                color_discrete_sequence = ["#4361ee","#7209b7","#f72585"],
+                template = "plotly_white",
+                labels   = {"value":"Rate (%)","variable":"Stage"},
+            )
+            fig3.update_layout(height=350,
+                               legend=dict(orientation="h", y=-0.2))
+            st.plotly_chart(fig3, use_container_width=True)
+        else:
+            # Show as bar chart if no monthly breakdown
+            val_col = next((c for c in df_conv.columns
+                            if "user" in c.lower()), df_conv.columns[-1])
+            name_col = df_conv.columns[0]
+            fig3 = px.funnel(
+                df_conv,
+                y = name_col,
+                x = val_col,
+                color_discrete_sequence = ["#4361ee","#7209b7","#f72585"],
+            )
+            fig3.update_layout(height=350, template="plotly_white")
+            st.plotly_chart(fig3, use_container_width=True)
 
     st.markdown("---")
 
     # ── Cohort Heatmap ──
     st.subheader("🔥 Cohort Retention Heatmap")
-    cohort_path = os.path.join(EXPORT_DIR, "analysis_cohort_long.csv")
+    df_cohort = load_csv("analysis_cohort_long.csv")
 
-    if os.path.exists(cohort_path):
-        df_cohort = pd.read_csv(cohort_path)
-        pivot = df_cohort.pivot_table(
-            index   = "cohort_month",
-            columns = "period_label",
-            values  = "retention_pct",
-            aggfunc = "mean",
-        )
-        # Sort columns naturally
-        cols_sorted = sorted(
-            pivot.columns,
-            key=lambda x: int(x.split()[-1])
-        )
-        pivot = pivot[cols_sorted]
+    if not df_cohort.empty:
+        cohort_col  = next((c for c in df_cohort.columns
+                            if "cohort" in c.lower()), df_cohort.columns[0])
+        period_col  = next((c for c in df_cohort.columns
+                            if "label" in c.lower() or "period" in c.lower()), None)
+        ret_col     = next((c for c in df_cohort.columns
+                            if "retention" in c.lower() or "pct" in c.lower()), None)
 
-        fig3 = go.Figure(go.Heatmap(
-            z            = pivot.values,
-            x            = pivot.columns.tolist(),
-            y            = pivot.index.tolist(),
-            colorscale   = "Blues",
-            text         = pivot.values.round(1),
-            texttemplate = "%{text}%",
-            showscale    = True,
-        ))
-        fig3.update_layout(
-            height   = 350,
-            template = "plotly_white",
-            xaxis    = dict(title="Period"),
-            yaxis    = dict(title="Cohort"),
-        )
-        st.plotly_chart(fig3, use_container_width=True)
+        if period_col and ret_col:
+            pivot = df_cohort.pivot_table(
+                index   = cohort_col,
+                columns = period_col,
+                values  = ret_col,
+                aggfunc = "mean",
+            )
+            try:
+                cols_sorted = sorted(
+                    pivot.columns,
+                    key=lambda x: int(str(x).split()[-1])
+                )
+                pivot = pivot[cols_sorted]
+            except Exception:
+                pass
 
-        # Key insight box
-        m1_avg = df_cohort[df_cohort["period_label"]=="Month 1"]["retention_pct"].mean()
-        st.info(
-            f"📌 **Key Insight:** Average Month-1 retention is **{m1_avg:.2f}%**. "
-            f"Most users do not return after their first purchase — "
-            f"suggesting opportunity for post-purchase email campaigns and loyalty programs."
-        )
+            fig4 = go.Figure(go.Heatmap(
+                z            = pivot.values,
+                x            = pivot.columns.tolist(),
+                y            = pivot.index.tolist(),
+                colorscale   = "Blues",
+                text         = pivot.round(1).values,
+                texttemplate = "%{text}%",
+                showscale    = True,
+            ))
+            fig4.update_layout(
+                height   = 350,
+                template = "plotly_white",
+                xaxis    = dict(title="Period"),
+                yaxis    = dict(title="Cohort"),
+            )
+            st.plotly_chart(fig4, use_container_width=True)
+
+            m1_col = "Month 1"
+            if m1_col in df_cohort.get(period_col, pd.Series()).values:
+                m1_avg = df_cohort[
+                    df_cohort[period_col] == m1_col
+                ][ret_col].mean()
+                st.info(
+                    f"📌 **Key Insight:** Average Month-1 retention is "
+                    f"**{m1_avg:.2f}%**. Most users don't return after first "
+                    f"purchase — opportunity for post-purchase email campaigns."
+                )
     else:
-        st.warning("⚠️ Run the cohort fix in Jupyter first to generate `analysis_cohort_long.csv`")
+        st.info("Cohort data not available.")
 
     st.markdown("---")
 
-    # ── Session Behaviour ──
-    st.subheader("⚖️ Converted vs Non-Converted Sessions")
-    df_sess = run_query("""
-        SELECT
-            CASE WHEN session_converted=1
-                 THEN 'Converted' ELSE 'Not Converted' END AS session_type,
-            ROUND(AVG(session_event_count),2)  AS avg_events,
-            ROUND(AVG(session_duration_min),2) AS avg_duration_min,
-            ROUND(AVG(unique_products),2)      AS avg_products,
-            COUNT(*)                           AS sessions
-        FROM dim_sessions
-        GROUP BY session_converted
-    """)
-    st.dataframe(
-        df_sess.style.format({
-            "avg_events"       : "{:.2f}",
-            "avg_duration_min" : "{:.2f} min",
-            "avg_products"     : "{:.2f}",
-            "sessions"         : "{:,}",
-        }).background_gradient(cmap="Blues"),
-        use_container_width=True,
-    )
+    # ── Session comparison ──
+    st.subheader("⚖️ Session Behaviour Summary")
+    df_sess = load_csv("dim_sessions.csv")
+
+    if not df_sess.empty and "session_converted" in df_sess.columns:
+        summary = (
+            df_sess.groupby("session_converted")
+            .agg(
+                sessions          = ("session_converted",    "count"),
+                avg_events        = ("session_event_count",  "mean"),
+                avg_duration_min  = ("session_duration_min", "mean"),
+                avg_products      = ("unique_products",       "mean"),
+            )
+            .reset_index()
+        )
+        summary["session_type"] = summary["session_converted"].map(
+            {1: "✅ Converted", 0: "❌ Not Converted"}
+        )
+        summary = summary.round(2)
+        st.dataframe(
+            summary[["session_type","sessions",
+                      "avg_events","avg_duration_min","avg_products"]],
+            use_container_width=True
+        )
+    else:
+        st.info("Session data not available on cloud deployment.")
