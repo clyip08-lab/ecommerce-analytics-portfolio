@@ -5,9 +5,11 @@
 > \*\*End-to-end analytics system built on 42M+ row e-commerce event data\*\*  
 
 > Showcasing data engineering, SQL analytics, BI dashboarding, and product analytics thinking.
+---
 
 ## 📊 Live Demo
-🔗https://clyip08-lab-ecommerce-analytics-portfol-streamlit-appapp-g6xeev.streamlit.app/
+🔗 https://clyip08-lab-ecommerce-analytics-portfol-streamlit-appapp-g6xeev.streamlit.app/
+
 ---
 \## 📌 Project Overview
 
