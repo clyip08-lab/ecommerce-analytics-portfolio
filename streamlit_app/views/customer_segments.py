@@ -47,33 +47,58 @@ def show():
     with col1:
         st.subheader("🍩 Segment Distribution")
         if user_col in df_seg.columns:
-
-            # ✅ Filter out zero-user segments
             df_pie = df_seg[df_seg[user_col] > 0].copy()
+            df_pie = df_pie.sort_values(user_col, ascending=False)
 
-            # ✅ Show actual user counts, not percentages
+            # Total for percentage calculation
+            pie_total = df_pie[user_col].sum()
+            df_pie["pct"] = (df_pie[user_col] / pie_total * 100).round(1)
+
+            # ✅ Only show text on segments > 2% — hide tiny ones
+            df_pie["label_text"] = df_pie.apply(
+                lambda r: f"{r[user_col]:,.0f} users ({r['pct']}%)"
+                          if r["pct"] >= 2
+                          else "",
+                axis=1
+            )
+
             fig1 = px.pie(
                 df_pie,
                 names  = seg_col,
                 values = user_col,
                 hole   = 0.45,
                 color_discrete_sequence = [
-                    "#4361ee","#f72585","#7209b7",
+                    "#4361ee","#7209b7","#f72585",
                     "#4cc9f0","#3a0ca3","#560bad","#480ca8"
                 ],
             )
             fig1.update_traces(
-                texttemplate = "%{label}<br>%{value:,} users<br>(%{percent})",
+                text         = df_pie["label_text"],
+                textinfo     = "text",
                 textposition = "outside",
                 pull         = [0.05] * len(df_pie),
+                hovertemplate = "<b>%{label}</b><br>Users: %{value:,}<br>Share: %{percent}<extra></extra>",
             )
             fig1.update_layout(
-                height     = 420,
+                height     = 450,
                 template   = "plotly_white",
                 showlegend = True,
-                legend     = dict(orientation="v", x=1.05),
+                legend     = dict(orientation="v", x=1.0, y=0.5),
+                margin     = dict(t=20, b=20, l=20, r=150),
             )
             st.plotly_chart(fig1, width="stretch")
+
+            # ✅ Show small segments in a clean table below
+            df_small = df_pie[df_pie["pct"] < 2][[seg_col, user_col, "pct"]]
+            if not df_small.empty:
+                st.caption("**Small segments (< 2% of buyers):**")
+                cols_small = st.columns(len(df_small))
+                for i, (_, row) in enumerate(df_small.iterrows()):
+                    cols_small[i].metric(
+                        str(row[seg_col]).replace("😴","").replace("⚠️","").replace("💛","").replace("🏆","").strip(),
+                        f"{int(row[user_col]):,}",
+                        f"{row['pct']}%"
+                    )
     with col2:
         st.subheader("💰 Revenue by RFM Segment")
         if rev_col:
