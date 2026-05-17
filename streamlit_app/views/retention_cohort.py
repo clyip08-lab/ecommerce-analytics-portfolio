@@ -76,30 +76,50 @@ def show():
                         scols[i].metric(name, f"{int(row[user_col]):,}", f"{row['pct']}%", delta_color="off")
 
         with col2:
-            st.subheader("Monthly Conversion Rates")
+            st.subheader("Conversion Funnel")
             df_conv = load_csv("analysis_funnel.csv")
             if not df_conv.empty:
-                month_col = next((c for c in df_conv.columns if "month" in c.lower()), None)
-                rate_cols = [c for c in df_conv.columns if "rate" in c.lower() or "pct" in c.lower()]
-                if month_col and rate_cols:
-                    fig2 = px.line(
-                        df_conv, x=month_col, y=rate_cols,
-                        markers=True,
-                        color_discrete_sequence=["#4361ee","#7209b7","#f72585"],
-                        template="plotly_white",
+                # Find event type and user columns
+                name_col = next((c for c in df_conv.columns
+                                 if "event" in c.lower() or "type" in c.lower()),
+                                df_conv.columns[0])
+                val_col  = next((c for c in df_conv.columns
+                                 if "user" in c.lower()), None)
+                if val_col:
+                    # Sort funnel order
+                    order_map = {"view": 0, "cart": 1, "purchase": 2}
+                    df_conv["_order"] = df_conv[name_col].map(order_map).fillna(99)
+                    df_conv = df_conv.sort_values("_order")
+
+                    # Calculate drop-off
+                    top_val = df_conv[val_col].iloc[0]
+                    df_conv["pct"] = (df_conv[val_col] / top_val * 100).round(1)
+                    df_conv["label"] = df_conv.apply(
+                        lambda r: f"{int(r[val_col]):,} ({r['pct']}%)", axis=1
                     )
-                    fig2.update_layout(height=380, legend=dict(orientation="h", y=-0.2))
-                    st.plotly_chart(fig2, width="stretch")
-                else:
-                    val_col  = next((c for c in df_conv.columns if "user" in c.lower()), df_conv.columns[-1])
-                    name_col = df_conv.columns[0]
+
                     fig2 = go.Figure(go.Funnel(
-                        y=df_conv[name_col],
-                        x=df_conv[val_col],
-                        marker=dict(color=["#4361ee","#7209b7","#f72585"]),
+                        y         = df_conv[name_col].str.capitalize(),
+                        x         = df_conv[val_col],
+                        text      = df_conv["label"],
+                        textinfo  = "text",
+                        marker    = dict(color=["#4361ee","#7209b7","#f72585"]),
                     ))
                     fig2.update_layout(height=380, template="plotly_white")
                     st.plotly_chart(fig2, width="stretch")
+
+                    # Key metrics below funnel
+                    views = df_conv.loc[df_conv[name_col]=="view",     val_col].values
+                    carts = df_conv.loc[df_conv[name_col]=="cart",     val_col].values
+                    purch = df_conv.loc[df_conv[name_col]=="purchase", val_col].values
+                    if len(views)>0 and len(carts)>0 and len(purch)>0:
+                        v2c = carts[0]  / views[0] * 100
+                        c2p = purch[0]  / carts[0] * 100
+                        ovr = purch[0]  / views[0] * 100
+                        m1, m2, m3 = st.columns(3)
+                        m1.metric("View to Cart",     f"{v2c:.1f}%")
+                        m2.metric("Cart to Purchase", f"{c2p:.1f}%")
+                        m3.metric("Overall Conv.",    f"{ovr:.1f}%")
 
     st.markdown("---")
     st.subheader("Cohort Retention Heatmap")
