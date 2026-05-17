@@ -1,265 +1,121 @@
-# streamlit_app/pages/retention_cohort.py
+# streamlit_app/views/retention_cohort.py
 
 import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
-import sys, os
+import os
+import sys
+
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from db import load_csv
+
 
 def show():
     st.title("🔄 Retention & Cohort Analysis")
     st.markdown("User retention, repeat purchase behaviour, and cohort tracking.")
     st.markdown("---")
 
-    # ── Load retention segments ──
+    # ── FIX: use relative path OR load_csv (NO WINDOWS PATH) ──
     df_seg = load_csv("analysis_rfm_segments.csv")
 
-    if not df_seg.empty:
-        # Find segment column dynamically
-        seg_col  = next((c for c in df_seg.columns
-                         if "segment" in c.lower()), df_seg.columns[0])
-        user_col = next((c for c in df_seg.columns
-                         if "user" in c.lower()), None)
-        rev_col  = next((c for c in df_seg.columns
-                         if "revenue" in c.lower()), None)
+    if df_seg.empty:
+        st.warning("RFM segment data not found.")
+        return
 
-        total = df_seg[user_col].sum() if user_col else 0
+    # ── Find columns safely ──
+    seg_col = next((c for c in df_seg.columns if "segment" in c.lower()), df_seg.columns[0])
+    user_col = next((c for c in df_seg.columns if "user" in c.lower()), None)
+    rev_col = next((c for c in df_seg.columns if "revenue" in c.lower()), None)
 
-        st.subheader("👥 Retention Segment Breakdown")
-        cols = st.columns(min(len(df_seg), 4))
-        colors = ["#4361ee","#7209b7","#f72585","#4cc9f0",
-                  "#3a0ca3","#560bad","#480ca8","#b5179e"]
+    total = df_seg[user_col].sum() if user_col else 0
 
-        for i, (_, row) in enumerate(df_seg.iterrows()):
-            if i >= len(cols):
-                break
-            users = row[user_col] if user_col else 0
-            pct   = users / total * 100 if total > 0 else 0
-            label = str(row[seg_col]).split()[-1]
-            cols[i].metric(label, f"{users:,.0f}", f"{pct:.1f}%")
+    # ── KPI cards ──
+    st.subheader("👥 Retention Segment Breakdown")
 
-        st.markdown("---")
-        col1, col2 = st.columns(2)
+    cols = st.columns(min(len(df_seg), 4))
 
-        with col1:
+    for i, (_, row) in enumerate(df_seg.iterrows()):
+        if i >= len(cols):
+            break
+
+        users = row[user_col] if user_col else 0
+        pct = users / total * 100 if total > 0 else 0
+        label = str(row[seg_col]).split()[-1]
+
+        cols[i].metric(label, f"{users:,.0f}", f"{pct:.1f}%")
+
+    st.markdown("---")
+
+    col1, col2 = st.columns(2)
+
+    # ── PIE CHART ──
+    with col1:
         st.subheader("🍩 Segment Distribution")
-        if user_col in df_seg.columns:
-            df_pie = df_seg[df_seg[user_col] > 0].copy()
-            df_pie = df_pie.sort_values(user_col, ascending=False).reset_index(drop=True)
 
-            pie_total      = df_pie[user_col].sum()
-            df_pie["pct"]  = (df_pie[user_col] / pie_total * 100).round(1)
-            df_large       = df_pie[df_pie["pct"] >= 2].copy()
-            df_small       = df_pie[df_pie["pct"] <  2].copy()
+        if user_col:
+            df_pie = df_seg.copy()
 
             fig1 = px.pie(
                 df_pie,
-                names  = seg_col,
-                values = user_col,
-                hole   = 0.45,
-                color_discrete_sequence = [
-                    "#4361ee","#7209b7","#f72585",
-                    "#4cc9f0","#3a0ca3","#560bad","#480ca8"
-                ],
+                names=seg_col,
+                values=user_col,
+                hole=0.45,
+                template="plotly_white",
             )
 
-            # ✅ Build custom text — empty string for small segments
-            custom_text = []
-            for _, row in df_pie.iterrows():
-                if row["pct"] >= 2:
-                    custom_text.append(f"{row['pct']}%")
-                else:
-                    custom_text.append("")
+            fig1.update_layout(height=380)
+            st.plotly_chart(fig1, use_container_width=True)
 
-            fig1.update_traces(
-                text             = custom_text,
-                textinfo         = "text",
-                textposition     = "inside",
-                insidetextanchor = "middle",
-                hovertemplate    = (
-                    "<b>%{label}</b><br>"
-                    "Users: %{value:,}<br>"
-                    "Share: %{percent:.1%}"
-                    "<extra></extra>"
-                ),
-            )
-            fig1.update_layout(
-                height     = 400,
-                template   = "plotly_white",
-                showlegend = True,
-                legend     = dict(orientation="v", x=1.0, y=0.5),
-                margin     = dict(t=10, b=10, l=10, r=150),
-            )
-            st.plotly_chart(fig1, width="stretch")
+    # ── REVENUE BAR ──
+    with col2:
+        st.subheader("💰 Revenue by Segment")
 
-            # ✅ Small segments shown as metric cards below chart
-            if not df_small.empty:
-                st.caption("**Smaller segments (< 2% of buyers):**")
-                small_cols = st.columns(len(df_small))
-                for i, (_, row) in enumerate(df_small.iterrows()):
-                    # Clean emoji from label for metric title
-                    clean_label = str(row[seg_col])
-                    for emoji in ["😴","⚠️","💛","🏆","😐","🆕","💀","🌱","👑"]:
-                        clean_label = clean_label.replace(emoji, "").strip()
-                    small_cols[i].metric(
-                        label = clean_label,
-                        value = f"{int(row[user_col]):,}",
-                        delta = f"{row['pct']}% of buyers",
-                        delta_color = "off",
-                    )
-                
-        with col2: # Fixed indentation alignment
-            st.subheader("💰 Revenue by Segment")
-            if rev_col:
-                fig2 = px.bar(
-                    df_seg.sort_values(rev_col, ascending=True),
-                    x=rev_col,
-                    y=seg_col,
-                    orientation="h",
-                    color=rev_col,
-                    color_continuous_scale="Blues",
-                    text=rev_col,
-                    template="plotly_white",
-                )
-                fig2.update_traces(
-                    texttemplate="$%{text:,.0f}",
-                    textposition="outside"
-                )
-                fig2.update_layout(height=380, showlegend=False)
-                st.plotly_chart(fig2, width='stretch')
+        if rev_col:
+            fig2 = px.bar(
+                df_seg.sort_values(rev_col, ascending=True),
+                x=rev_col,
+                y=seg_col,
+                orientation="h",
+                color=rev_col,
+                color_continuous_scale="Blues",
+                template="plotly_white",
+            )
+
+            fig2.update_layout(height=380, showlegend=False)
+            st.plotly_chart(fig2, use_container_width=True)
 
     st.markdown("---")
 
-    # ── Conversion funnel trend ──
-    st.subheader("📈 Monthly Conversion Rates")
-    df_conv = load_csv("analysis_funnel.csv")
-
-    if not df_conv.empty:
-        # Check if it has monthly breakdown
-        month_col = next((c for c in df_conv.columns
-                          if "month" in c.lower()), None)
-        rate_cols = [c for c in df_conv.columns
-                     if "rate" in c.lower() or "pct" in c.lower()]
-
-        if month_col and rate_cols:
-            fig3 = px.line(
-                df_conv,
-                x       = month_col,
-                y       = rate_cols,
-                markers = True,
-                color_discrete_sequence = ["#4361ee","#7209b7","#f72585"],
-                template = "plotly_white",
-                labels   = {"value":"Rate (%)","variable":"Stage"},
-            )
-            fig3.update_layout(height=350,
-                               legend=dict(orientation="h", y=-0.2))
-            st.plotly_chart(fig3, width='stretch')
-        else:
-            # Show as bar chart if no monthly breakdown
-            val_col = next((c for c in df_conv.columns
-                            if "user" in c.lower()), df_conv.columns[-1])
-            name_col = df_conv.columns[0]
-            fig3 = px.funnel(
-                df_conv,
-                y = name_col,
-                x = val_col,
-                color_discrete_sequence = ["#4361ee","#7209b7","#f72585"],
-            )
-            fig3.update_layout(height=350, template="plotly_white")
-            st.plotly_chart(fig3, width='stretch')
-
-    st.markdown("---")
-
-    # ── Cohort Heatmap ──
+    # ── COHORT (SAFE VERSION) ──
     st.subheader("🔥 Cohort Retention Heatmap")
+
     df_cohort = load_csv("analysis_cohort_long.csv")
 
     if not df_cohort.empty:
-        cohort_col  = next((c for c in df_cohort.columns
-                            if "cohort" in c.lower()), df_cohort.columns[0])
-        period_col  = next((c for c in df_cohort.columns
-                            if "label" in c.lower() or "period" in c.lower()), None)
-        ret_col     = next((c for c in df_cohort.columns
-                            if "retention" in c.lower() or "pct" in c.lower()), None)
+
+        cohort_col = next((c for c in df_cohort.columns if "cohort" in c.lower()), df_cohort.columns[0])
+        period_col = next((c for c in df_cohort.columns if "period" in c.lower() or "label" in c.lower()), None)
+        ret_col = next((c for c in df_cohort.columns if "retention" in c.lower() or "pct" in c.lower()), None)
 
         if period_col and ret_col:
+
             pivot = df_cohort.pivot_table(
-                index   = cohort_col,
-                columns = period_col,
-                values  = ret_col,
-                aggfunc = "mean",
+                index=cohort_col,
+                columns=period_col,
+                values=ret_col,
+                aggfunc="mean"
             )
-            try:
-                cols_sorted = sorted(
-                    pivot.columns,
-                    key=lambda x: int(str(x).split()[-1])
-                )
-                pivot = pivot[cols_sorted]
-            except Exception:
-                pass
 
-            fig4 = go.Figure(go.Heatmap(
-                z            = pivot.values,
-                x            = pivot.columns.tolist(),
-                y            = pivot.index.tolist(),
-                colorscale   = "Blues",
-                text         = pivot.round(1).values,
-                texttemplate = "%{text}%",
-                showscale    = True,
+            fig = go.Figure(go.Heatmap(
+                z=pivot.values,
+                x=pivot.columns,
+                y=pivot.index,
+                colorscale="Blues"
             ))
-            fig4.update_layout(
-                height   = 350,
-                template = "plotly_white",
-                xaxis    = dict(title="Period"),
-                yaxis    = dict(title="Cohort"),
-            )
-            st.plotly_chart(fig4, width='stretch')
 
-            m1_col = "Month 1"
-            if m1_col in df_cohort.get(period_col, pd.Series()).values:
-                m1_avg = df_cohort[
-                    df_cohort[period_col] == m1_col
-                ][ret_col].mean()
-                st.info(
-                    f"📌 **Key Insight:** Average Month-1 retention is "
-                    f"**{m1_avg:.2f}%**. Most users don't return after first "
-                    f"purchase — opportunity for post-purchase email campaigns."
-                )
+            fig.update_layout(height=350)
+            st.plotly_chart(fig, use_container_width=True)
+
     else:
         st.info("Cohort data not available.")
-
-    st.markdown("---")
-
-   # ── Session comparison ──
-    st.subheader("⚖️ Session Behaviour Summary")
-    df_sess = load_csv("analysis_sessions_summary.csv")
-
-    if not df_sess.empty:
-        st.dataframe(df_sess, use_container_width=True)
-
-        # Visual comparison
-        metrics = ["avg_events","avg_duration_min","avg_products"]
-        labels  = ["Avg Events","Avg Duration (min)","Avg Products Viewed"]
-
-        fig = px.bar(
-            df_sess.melt(
-                id_vars    = "session_type",
-                value_vars = metrics,
-                var_name   = "metric",
-                value_name = "value",
-            ),
-            x        = "metric",
-            y        = "value",
-            color    = "session_type",
-            barmode  = "group",
-            labels   = {"metric":"Metric","value":"Average","session_type":"Session"},
-            color_discrete_sequence = ["#f72585","#4361ee"],
-            template = "plotly_white",
-        )
-        fig.update_layout(height=350, xaxis_tickangle=0)
-        fig.update_xaxes(tickvals=metrics, ticktext=labels)
-        st.plotly_chart(fig, width="stretch")
-    else:
-        st.info("Session summary data not available.")
