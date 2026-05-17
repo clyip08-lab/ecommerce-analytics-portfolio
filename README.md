@@ -132,42 +132,19 @@ ecommerce-analytics-portfolio/
 | **Streamlit** | Live web analytics app |
 
 ---
+## ⚙️ Local Setup
 
-## ⚙️ How to Run
+<details>
+<summary>Click to expand setup instructions</summary>
 
-### 1. Clone the repo
-```bash
-git clone https://github.com/YOUR_USERNAME/ecommerce-analytics-portfolio.git
-cd ecommerce-analytics-portfolio
-```
+1. Clone the repo and create a virtual environment
+2. Run `pip install -r requirements.txt`
+3. Create `.env` with your MySQL credentials
+4. Run notebooks Phase 1–4 to load data into MySQL
+5. Run `streamlit run streamlit_app/app.py`
 
-### 2. Create virtual environment
-```bash
-python -m venv venv
-venv\Scripts\activate        # Windows
-source venv/bin/activate     # Mac/Linux
-```
-
-### 3. Install dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Set up environment variables
-Create a `.env` file in the root:
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=your_password
-DB_NAME=ecommerce_analytics
-### 5. Set up MySQL
-- Create database: `CREATE DATABASE ecommerce_analytics;`
-- Run notebooks Phase 1–4 in order to load data
-
-### 6. Run Streamlit App
-```bash
-streamlit run streamlit_app/app.py
-```
+Full instructions in each notebook.
+</details>
 
 ---
 
