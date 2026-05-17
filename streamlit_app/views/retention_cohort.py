@@ -167,8 +167,10 @@ def show():
     df_sess = load_csv("analysis_sessions_summary.csv")
     if not df_sess.empty:
         st.dataframe(df_sess)
-        metrics = [c for c in df_sess.columns if "avg" in c.lower()]
         type_col = next((c for c in df_sess.columns if "type" in c.lower()), None)
+        # ✅ Exclude avg_revenue — 100x larger, makes other bars invisible
+        metrics = [c for c in df_sess.columns
+                   if "avg" in c.lower() and "revenue" not in c.lower()]
         if metrics and type_col:
             fig4 = px.bar(
                 df_sess.melt(id_vars=type_col, value_vars=metrics,
@@ -176,8 +178,16 @@ def show():
                 x="metric", y="value", color=type_col, barmode="group",
                 color_discrete_sequence=["#f72585","#4361ee"],
                 template="plotly_white",
+                labels={"value":"Average Value","metric":"Metric"},
             )
-            fig4.update_layout(height=350)
+            fig4.update_layout(height=380)
             st.plotly_chart(fig4, width="stretch")
+        # ✅ Show avg_revenue separately as metric cards
+        rev_col_s = next((c for c in df_sess.columns if "revenue" in c.lower()), None)
+        if rev_col_s and type_col:
+            st.caption("Average Revenue per Session:")
+            rcols = st.columns(len(df_sess))
+            for i, (_, row) in enumerate(df_sess.iterrows()):
+                rcols[i].metric(str(row[type_col]), f"${float(row[rev_col_s]):,.2f}")
     else:
         st.info("Session data not available.")
