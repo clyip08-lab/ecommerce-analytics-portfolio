@@ -125,39 +125,74 @@ def show():
     st.subheader("Cohort Retention Heatmap")
     df_cohort = load_csv("analysis_cohort_long.csv")
     if not df_cohort.empty:
-        cohort_col = next((c for c in df_cohort.columns if "cohort" in c.lower()), df_cohort.columns[0])
-        period_col = next((c for c in df_cohort.columns if "label" in c.lower() or "period" in c.lower()), None)
-        ret_col    = next((c for c in df_cohort.columns if "retention" in c.lower() or "pct" in c.lower()), None)
+        # ✅ Use exact column names from CSV
+        cohort_col = "cohort_month"
+        period_col = "period_label"
+        ret_col    = "retention_pct"
 
-        if period_col and ret_col:
+        # Verify columns exist
+        missing = [c for c in [cohort_col, period_col, ret_col] if c not in df_cohort.columns]
+        if missing:
+            st.warning(f"Missing columns: {missing}. Available: {df_cohort.columns.tolist()}")
+        else:
             pivot = df_cohort.pivot_table(
-                index=cohort_col, columns=period_col,
-                values=ret_col, aggfunc="mean",
+                index   = cohort_col,
+                columns = period_col,
+                values  = ret_col,
+                aggfunc = "mean",
             )
+            # ✅ Sort columns: Month 0, Month 1
             try:
                 cols_sorted = sorted(pivot.columns, key=lambda x: int(str(x).split()[-1]))
                 pivot = pivot[cols_sorted]
             except Exception:
                 pass
 
+            # ✅ Fill NaN with empty string for display
+            z_text = []
+            for row in pivot.values:
+                row_text = []
+                for val in row:
+                    if pd.isna(val):
+                        row_text.append("")
+                    else:
+                        row_text.append(f"{val:.1f}%")
+                z_text.append(row_text)
+
             fig3 = go.Figure(go.Heatmap(
-                z=pivot.values,
-                x=pivot.columns.tolist(),
-                y=pivot.index.tolist(),
-                colorscale="Blues",
-                text=pivot.round(1).values,
-                texttemplate="%{text}%",
-                showscale=True,
+                z           = pivot.fillna(0).values,
+                x           = pivot.columns.tolist(),
+                y           = pivot.index.tolist(),
+                colorscale  = "Blues",
+                text        = z_text,
+                texttemplate = "%{text}",
+                showscale   = True,
+                zmin        = 0,
+                zmax        = 100,
             ))
             fig3.update_layout(
-                height=350, template="plotly_white",
-                xaxis=dict(title="Period"),
-                yaxis=dict(title="Cohort"),
+                height   = 300,
+                template = "plotly_white",
+                xaxis    = dict(title="Period", tickmode="array",
+                               tickvals=pivot.columns.tolist(),
+                               ticktext=pivot.columns.tolist()),
+                yaxis    = dict(title="Cohort Month"),
+                margin   = dict(t=20, b=40, l=80, r=20),
             )
             st.plotly_chart(fig3, width="stretch")
+
+            # ✅ Key metrics below heatmap
+            m1 = df_cohort[df_cohort[period_col]=="Month 1"][ret_col]
+            if len(m1) > 0:
+                avg_m1 = m1.mean()
+                col_a, col_b = st.columns(2)
+                col_a.metric("Month-0 Retention", "100%", "Baseline")
+                col_b.metric("Month-1 Retention", f"{avg_m1:.2f}%",
+                             f"{avg_m1-100:.2f}% vs baseline", delta_color="inverse")
             st.info(
-                "Key Insight: Low Month-1 retention means most users do not return "
-                "after their first purchase. Opportunity: post-purchase email campaigns."
+                "Key Insight: Only 0.37% of Oct buyers returned in Nov. "
+                "Near-zero retention means acquisition cost is wasted without a "
+                "post-purchase retention strategy (email flows, loyalty program)."
             )
     else:
         st.info("Cohort data not available.")
