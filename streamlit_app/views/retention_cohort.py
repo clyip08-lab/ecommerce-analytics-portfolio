@@ -43,39 +43,56 @@ def show():
         st.markdown("---")
         col1, col2 = st.columns(2)
 
-        with col1:
+        with col1: #  Fixed indentation alignment
             st.subheader("🍩 Segment Distribution")
-            if user_col:
-                fig1 = px.pie(
-                    df_seg,
-                    names  = seg_col,
-                    values = user_col,
-                    hole   = 0.45,
-                    color_discrete_sequence = colors,
-                )
-                fig1.update_layout(height=380, template="plotly_white")
-                st.plotly_chart(fig1, width='stretch')
+            if user_col in df_seg.columns:
+                # Filter out zero-user segments
+                df_pie = df_seg[df_seg[user_col] > 0].copy()
 
-        with col2:
+                # Show actual user counts, not percentages
+                fig1 = px.pie(
+                    df_pie,
+                    names=seg_col,
+                    values=user_col,
+                    hole=0.45,
+                    color_discrete_sequence=[
+                        "#4361ee", "#f72585", "#7209b7",
+                        "#4cc9f0", "#3a0ca3", "#560bad", "#480ca8"
+                    ],
+                )
+                fig1.update_traces(
+                    texttemplate="%{label}<br>%{value:,} users<br>(%{percent})",
+                    textposition="outside",
+                    pull=[0.05] * len(df_pie),
+                )
+                fig1.update_layout(
+                    height=420,
+                    template="plotly_white",
+                    showlegend=True,
+                    legend=dict(orientation="v", x=1.05),
+                )
+                st.plotly_chart(fig1, width="stretch")
+                
+        with col2: # Fixed indentation alignment
             st.subheader("💰 Revenue by Segment")
             if rev_col:
                 fig2 = px.bar(
                     df_seg.sort_values(rev_col, ascending=True),
-                    x           = rev_col,
-                    y           = seg_col,
-                    orientation = "h",
-                    color       = rev_col,
-                    color_continuous_scale = "Blues",
-                    text        = rev_col,
-                    template    = "plotly_white",
+                    x=rev_col,
+                    y=seg_col,
+                    orientation="h",
+                    color=rev_col,
+                    color_continuous_scale="Blues",
+                    text=rev_col,
+                    template="plotly_white",
                 )
                 fig2.update_traces(
-                    texttemplate = "$%{text:,.0f}",
-                    textposition = "outside"
+                    texttemplate="$%{text:,.0f}",
+                    textposition="outside"
                 )
                 fig2.update_layout(height=380, showlegend=False)
                 st.plotly_chart(fig2, width='stretch')
-
+                
     st.markdown("---")
 
     # ── Conversion funnel trend ──
