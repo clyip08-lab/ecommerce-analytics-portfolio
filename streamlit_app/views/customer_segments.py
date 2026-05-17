@@ -45,21 +45,35 @@ def show():
     col1, col2 = st.columns(2)
 
     with col1:
-        st.subheader("👥 Users by RFM Segment")
+        st.subheader("🍩 Segment Distribution")
         if user_col in df_seg.columns:
-            fig1 = px.bar(
-                df_seg.sort_values(user_col),
-                x=user_col, y=seg_col, orientation="h",
-                color=rev_col if rev_col else user_col,
-                color_continuous_scale="Blues",
-                text=user_col,
-                labels={user_col:"Users", seg_col:"Segment"},
-                template="plotly_white",
-            )
-            fig1.update_traces(texttemplate="%{text:,}", textposition="outside")
-            fig1.update_layout(height=420, showlegend=False)
-            st.plotly_chart(fig1, width='stretch')
 
+            # ✅ Filter out zero-user segments
+            df_pie = df_seg[df_seg[user_col] > 0].copy()
+
+            # ✅ Show actual user counts, not percentages
+            fig1 = px.pie(
+                df_pie,
+                names  = seg_col,
+                values = user_col,
+                hole   = 0.45,
+                color_discrete_sequence = [
+                    "#4361ee","#f72585","#7209b7",
+                    "#4cc9f0","#3a0ca3","#560bad","#480ca8"
+                ],
+            )
+            fig1.update_traces(
+                texttemplate = "%{label}<br>%{value:,} users<br>(%{percent})",
+                textposition = "outside",
+                pull         = [0.05] * len(df_pie),
+            )
+            fig1.update_layout(
+                height     = 420,
+                template   = "plotly_white",
+                showlegend = True,
+                legend     = dict(orientation="v", x=1.05),
+            )
+            st.plotly_chart(fig1, width="stretch")
     with col2:
         st.subheader("💰 Revenue by RFM Segment")
         if rev_col:
@@ -72,15 +86,31 @@ def show():
             st.plotly_chart(fig2, width='stretch')
 
     st.markdown("---")
-
-    # ── Segment Detail Table ──
     st.subheader("📋 Segment Detail")
+
+    # ✅ Highlight champions insight
+    champ_row = df_seg[df_seg[seg_col].str.contains("Champion", case=False, na=False)]
+    if not champ_row.empty and rev_col:
+        c_users = int(champ_row[user_col].values[0]) if user_col else 0
+        c_rev   = float(champ_row[rev_col].values[0])
+        c_share = c_rev / total_rev * 100 if total_rev > 0 else 0
+        st.success(
+            f"👑 **Champions: {c_users:,} users ({c_share:.1f}% of revenue)** "
+            f"— your most valuable customers. Protect and reward them."
+        )
+
+    needs_row = df_seg[df_seg[seg_col].str.contains("Needs", case=False, na=False)]
+    if not needs_row.empty and user_col:
+        n_users = int(needs_row[user_col].values[0])
+        st.warning(
+            f"⚠️ **Needs Attention: {n_users:,} users (43.5%)** "
+            f"— largest segment but low engagement. Re-engagement campaign opportunity."
+        )
+
     st.dataframe(
         df_seg.sort_values(rev_col, ascending=False) if rev_col else df_seg,
-        width='stretch'
+        use_container_width=True,
     )
-
-    st.markdown("---")
 
     # ── Funnel drop-off from CSV ──
     st.subheader("🔽 Funnel Drop-off by Category")
