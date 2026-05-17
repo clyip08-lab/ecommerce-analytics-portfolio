@@ -104,29 +104,33 @@ def show():
 
     st.markdown("---")
 
-    # ── Pareto Chart ──
+   # ── Pareto Chart ──
     st.subheader("📊 Pareto 80/20 — Product Revenue")
     if not df_pareto.empty:
         rev_col_p = next((c for c in df_pareto.columns
                           if "revenue" in c.lower()), None)
         if rev_col_p:
-            # ✅ Limit to top 200 for readability
-            df_p = (
+            # Sort all products by revenue
+            df_all = (
                 df_pareto
                 .sort_values(rev_col_p, ascending=False)
-                .head(200)
                 .reset_index(drop=True)
             )
-            df_p["rank"]    = range(1, len(df_p) + 1)
-            df_p["cum_pct"] = (
-                df_p[rev_col_p].cumsum() /
-                df_pareto[rev_col_p].sum() * 100  # % of ALL products
+            df_all["rank"]    = range(1, len(df_all) + 1)
+            df_all["cum_pct"] = (
+                df_all[rev_col_p].cumsum() /
+                df_all[rev_col_p].sum() * 100
             ).round(2)
 
-            n80     = len(df_p[df_p["cum_pct"] <= 80])
-            pct_80  = round(n80 / df_pareto[rev_col_p].count() * 100, 1)
+            # ✅ Find exact rank where cumulative hits 80%
+            n80    = int((df_all["cum_pct"] <= 80).sum()) + 1
+            pct_80 = round(n80 / len(df_all) * 100, 1)
 
-            # ✅ Key insight above chart
+            # ✅ Show enough products to see the 80% crossover
+            # Take n80 + 20% more so the line visibly crosses
+            show_n   = min(int(n80 * 1.3) + 10, len(df_all))
+            df_p     = df_all.head(show_n).copy()
+
             st.info(
                 f"📌 **Top {n80} products ({pct_80}% of catalogue) "
                 f"drive 80% of revenue** — classic Pareto 80/20 rule."
@@ -155,25 +159,24 @@ def show():
                 secondary_y = True,
             )
 
-            # 80% threshold line
+            # 80% horizontal threshold
             fig4.add_hline(
-                y                = 80,
-                line_dash        = "dash",
-                line_color       = "red",
-                secondary_y      = True,
-                annotation_text  = "80% Revenue",
+                y                   = 80,
+                line_dash           = "dash",
+                line_color          = "red",
+                secondary_y         = True,
+                annotation_text     = "80% Revenue Threshold",
                 annotation_position = "right",
             )
 
-            # Top N vertical line
-            if n80 > 0 and n80 <= len(df_p):
-                fig4.add_vline(
-                    x                = n80,
-                    line_dash        = "dash",
-                    line_color       = "orange",
-                    annotation_text  = f"Top {n80} products",
-                    annotation_position = "top right",
-                )
+            # Vertical line at exact 80% product rank
+            fig4.add_vline(
+                x                   = n80,
+                line_dash           = "dash",
+                line_color          = "orange",
+                annotation_text     = f"Rank {n80} ({pct_80}%)",
+                annotation_position = "top left",
+            )
 
             fig4.update_layout(
                 height    = 420,
@@ -182,8 +185,13 @@ def show():
                 xaxis     = dict(title="Product Rank (by Revenue)"),
                 legend    = dict(orientation="h", y=1.1),
             )
-            fig4.update_yaxes(title_text="Revenue ($)",          secondary_y=False)
-            fig4.update_yaxes(title_text="Cumulative Revenue %",
-                              range=[0, 105],
-                              secondary_y=True)
+            fig4.update_yaxes(
+                title_text = "Revenue ($)",
+                secondary_y = False,
+            )
+            fig4.update_yaxes(
+                title_text  = "Cumulative Revenue %",
+                range       = [0, 105],
+                secondary_y = True,
+            )
             st.plotly_chart(fig4, width="stretch")
