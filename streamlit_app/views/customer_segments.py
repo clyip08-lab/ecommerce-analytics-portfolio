@@ -38,42 +38,39 @@ def show():
     st.markdown("---")
     col1, col2 = st.columns(2)
 
-    with col1:
-        st.subheader("🍩 Segment Distribution")
-        df_pie        = df_seg[df_seg[user_col] > 0].copy()
-        pie_total     = df_pie[user_col].sum()
-        df_pie["pct"] = (df_pie[user_col] / pie_total * 100).round(1)
-        df_large      = df_pie[df_pie["pct"] >= 2].reset_index(drop=True)
-        df_small      = df_pie[df_pie["pct"] <  2].reset_index(drop=True)
+with col1:
+        st.subheader("👥 Users by Segment")
 
-        fig1 = px.pie(
-            df_large,
-            names  = seg_col,
-            values = user_col,
-            hole   = 0.45,
-            color_discrete_sequence = ["#4361ee","#7209b7","#f72585","#4cc9f0"],
+        df_bar = df_seg[df_seg[user_col] > 0].copy()
+        df_bar = df_bar.sort_values(user_col, ascending=True)
+        pie_total     = df_bar[user_col].sum()
+        df_bar["pct"] = (df_bar[user_col] / pie_total * 100).round(1)
+        df_bar["label"] = df_bar.apply(
+            lambda r: f"{int(r[user_col]):,} ({r['pct']}%)", axis=1
+        )
+
+        fig1 = px.bar(
+            df_bar,
+            x           = user_col,
+            y           = seg_col,
+            orientation = "h",
+            color       = user_col,
+            color_continuous_scale = "Blues",
+            text        = "label",
+            labels      = {user_col:"Users", seg_col:"Segment"},
+            template    = "plotly_white",
         )
         fig1.update_traces(
-            texttemplate  = "%{percent:.1%}",
-            textposition  = "inside",
-            hovertemplate = "<b>%{label}</b><br>Users: %{value:,}<br>%{percent:.1%}<extra></extra>",
+            textposition = "outside",
+            cliponaxis   = False,
         )
         fig1.update_layout(
-            height=380, template="plotly_white",
-            showlegend=True,
-            legend=dict(orientation="v", x=1.0, y=0.5),
-            margin=dict(t=10, b=10, l=10, r=150),
+            height     = 400,
+            showlegend = False,
+            margin     = dict(r=150),
+            xaxis      = dict(title="Number of Users"),
         )
         st.plotly_chart(fig1, width="stretch")
-
-        if not df_small.empty:
-            st.caption("🔍 **Smaller segments:**")
-            scols = st.columns(len(df_small))
-            for i, (_, row) in enumerate(df_small.iterrows()):
-                name = str(row[seg_col])
-                for e in ["😴","⚠️","💛","🏆","😐","🆕","💀","🌱","👑","🎯","😶"]:
-                    name = name.replace(e, "").strip()
-                scols[i].metric(name, f"{int(row[user_col]):,}", f"{row['pct']}%", delta_color="off")
 
     with col2:
         st.subheader("💰 Revenue by Segment")
