@@ -5,7 +5,7 @@ import plotly.express as px
 import pandas as pd
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from db import load_csv, run_query
+from db import load_csv
 
 def show():
     st.title("👥 Customer Segments")
@@ -102,14 +102,15 @@ def show():
     needs_row = df_seg[df_seg[seg_col].str.contains("Needs", case=False, na=False)]
     if not needs_row.empty and user_col:
         n_users = int(needs_row[user_col].values[0])
+        n_pct = n_users / total_users * 100 if total_users > 0 else 0
         st.warning(
-            f"⚠️ **Needs Attention: {n_users:,} users (43.5%)** "
+            f"⚠️ **Needs Attention: {n_users:,} users ({n_pct:.1f}%)** "
             f"— largest segment but low engagement. Re-engagement campaign opportunity."
         )
 
     st.dataframe(
         df_seg.sort_values(rev_col, ascending=False) if rev_col else df_seg,
-        use_container_width=True,
+        use_container_width=False,
     )
 
     # ── Funnel drop-off from CSV ──
