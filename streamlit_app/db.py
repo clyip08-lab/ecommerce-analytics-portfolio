@@ -16,7 +16,7 @@ def load_csv(filename: str) -> pd.DataFrame:
     """Load a CSV export file directly."""
     path = os.path.join(EXPORT_DIR, filename)
     if os.path.exists(path):
-        df = pd.read_csv(path)
+        df = pd.read_csv(path, dtype={"cohort_month": str})
         for col in df.columns:
             try:
                 df[col] = pd.to_numeric(df[col])

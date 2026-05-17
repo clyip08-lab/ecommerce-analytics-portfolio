@@ -125,7 +125,8 @@ def show():
     st.subheader("Cohort Retention Heatmap")
     df_cohort = load_csv("analysis_cohort_long.csv")
     if not df_cohort.empty:
-        # ✅ Use exact column names from CSV
+        # ✅ Force cohort_month as string to prevent date parsing
+        df_cohort["cohort_month"] = df_cohort["cohort_month"].astype(str).str[:7]
         cohort_col = "cohort_month"
         period_col = "period_label"
         ret_col    = "retention_pct"
