@@ -170,7 +170,15 @@ Full instructions in each notebook.
 - **Funnel Analysis** — view → cart → purchase drop-off by category
 
 ---
-
+## Key Analytical Lessons
+Sampling Bias in Retention Analysis
+Initial event-level sampling significantly underestimated retention rates because future user events were excluded from the sampled dataset.
+To improve longitudinal consistency:
+- User-level sampling was adopted
+- Full event histories were preserved
+- Cohort tracking accuracy improved
+This highlighted the importance of selecting sampling strategies based on analytical objectives rather than computational convenience.
+---
 ## 👤 About
 
 Built by **YIP CHEN LENG**  
