@@ -107,35 +107,83 @@ def show():
     # ── Pareto Chart ──
     st.subheader("📊 Pareto 80/20 — Product Revenue")
     if not df_pareto.empty:
-        rev_col_p = next((c for c in df_pareto.columns if "revenue" in c.lower()), None)
+        rev_col_p = next((c for c in df_pareto.columns
+                          if "revenue" in c.lower()), None)
         if rev_col_p:
-            df_pareto = df_pareto.sort_values(rev_col_p, ascending=False).reset_index(drop=True)
-            df_pareto["rank"]    = range(1, len(df_pareto)+1)
-            df_pareto["cum_pct"] = (
-                df_pareto[rev_col_p].cumsum() /
-                df_pareto[rev_col_p].sum() * 100
+            # ✅ Limit to top 200 for readability
+            df_p = (
+                df_pareto
+                .sort_values(rev_col_p, ascending=False)
+                .head(200)
+                .reset_index(drop=True)
+            )
+            df_p["rank"]    = range(1, len(df_p) + 1)
+            df_p["cum_pct"] = (
+                df_p[rev_col_p].cumsum() /
+                df_pareto[rev_col_p].sum() * 100  # % of ALL products
             ).round(2)
 
-            n80 = len(df_pareto[df_pareto["cum_pct"] <= 80])
+            n80     = len(df_p[df_p["cum_pct"] <= 80])
+            pct_80  = round(n80 / df_pareto[rev_col_p].count() * 100, 1)
+
+            # ✅ Key insight above chart
+            st.info(
+                f"📌 **Top {n80} products ({pct_80}% of catalogue) "
+                f"drive 80% of revenue** — classic Pareto 80/20 rule."
+            )
 
             fig4 = make_subplots(specs=[[{"secondary_y": True}]])
+
             fig4.add_trace(
-                go.Bar(x=df_pareto["rank"], y=df_pareto[rev_col_p],
-                       name="Revenue", marker_color="#4361ee", opacity=0.6),
-                secondary_y=False,
+                go.Bar(
+                    x            = df_p["rank"],
+                    y            = df_p[rev_col_p],
+                    name         = "Product Revenue ($)",
+                    marker_color = "#4361ee",
+                    opacity      = 0.7,
+                ),
+                secondary_y = False,
             )
             fig4.add_trace(
-                go.Scatter(x=df_pareto["rank"], y=df_pareto["cum_pct"],
-                           name="Cumulative %", mode="lines",
-                           line=dict(color="#f72585", width=2)),
-                secondary_y=True,
+                go.Scatter(
+                    x    = df_p["rank"],
+                    y    = df_p["cum_pct"],
+                    name = "Cumulative Revenue %",
+                    mode = "lines",
+                    line = dict(color="#f72585", width=2.5),
+                ),
+                secondary_y = True,
             )
-            fig4.add_hline(y=80, line_dash="dash", line_color="red",
-                           secondary_y=True, annotation_text="80%")
-            fig4.add_vline(x=n80, line_dash="dash", line_color="orange",
-                           annotation_text=f"Top {n80} products")
-            fig4.update_layout(height=380, template="plotly_white",
-                               hovermode="x unified")
-            fig4.update_yaxes(title_text="Revenue ($)", secondary_y=False)
-            fig4.update_yaxes(title_text="Cumulative %", secondary_y=True)
-            st.plotly_chart(fig4, width='stretch')
+
+            # 80% threshold line
+            fig4.add_hline(
+                y                = 80,
+                line_dash        = "dash",
+                line_color       = "red",
+                secondary_y      = True,
+                annotation_text  = "80% Revenue",
+                annotation_position = "right",
+            )
+
+            # Top N vertical line
+            if n80 > 0 and n80 <= len(df_p):
+                fig4.add_vline(
+                    x                = n80,
+                    line_dash        = "dash",
+                    line_color       = "orange",
+                    annotation_text  = f"Top {n80} products",
+                    annotation_position = "top right",
+                )
+
+            fig4.update_layout(
+                height    = 420,
+                template  = "plotly_white",
+                hovermode = "x unified",
+                xaxis     = dict(title="Product Rank (by Revenue)"),
+                legend    = dict(orientation="h", y=1.1),
+            )
+            fig4.update_yaxes(title_text="Revenue ($)",          secondary_y=False)
+            fig4.update_yaxes(title_text="Cumulative Revenue %",
+                              range=[0, 105],
+                              secondary_y=True)
+            st.plotly_chart(fig4, width="stretch")
