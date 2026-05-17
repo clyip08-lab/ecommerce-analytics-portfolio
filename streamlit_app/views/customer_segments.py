@@ -49,37 +49,27 @@ with col1:
         if user_col in df_seg.columns:
             df_pie = df_seg[df_seg[user_col] > 0].copy()
             df_pie = df_pie.sort_values(user_col, ascending=False).reset_index(drop=True)
+            pie_total     = df_pie[user_col].sum()
+            df_pie["pct"] = (df_pie[user_col] / pie_total * 100).round(1)
 
-            pie_total      = df_pie[user_col].sum()
-            df_pie["pct"]  = (df_pie[user_col] / pie_total * 100).round(1)
-            df_large       = df_pie[df_pie["pct"] >= 2].copy()
-            df_small       = df_pie[df_pie["pct"] <  2].copy()
+            # ✅ Split BEFORE building chart
+            df_large = df_pie[df_pie["pct"] >= 2].copy().reset_index(drop=True)
+            df_small = df_pie[df_pie["pct"] <  2].copy().reset_index(drop=True)
 
+            # ✅ Only plot large segments — small ones excluded entirely
             fig1 = px.pie(
-                df_pie,
+                df_large,
                 names  = seg_col,
                 values = user_col,
                 hole   = 0.45,
                 color_discrete_sequence = [
-                    "#4361ee","#7209b7","#f72585",
-                    "#4cc9f0","#3a0ca3","#560bad","#480ca8"
+                    "#4361ee","#7209b7","#f72585","#4cc9f0"
                 ],
             )
-
-            # ✅ Build custom text — empty string for small segments
-            custom_text = []
-            for _, row in df_pie.iterrows():
-                if row["pct"] >= 2:
-                    custom_text.append(f"{row['pct']}%")
-                else:
-                    custom_text.append("")
-
             fig1.update_traces(
-                text             = custom_text,
-                textinfo         = "text",
-                textposition     = "inside",
-                insidetextanchor = "middle",
-                hovertemplate    = (
+                texttemplate  = "%{percent:.1%}",
+                textposition  = "inside",
+                hovertemplate = (
                     "<b>%{label}</b><br>"
                     "Users: %{value:,}<br>"
                     "Share: %{percent:.1%}"
@@ -87,7 +77,7 @@ with col1:
                 ),
             )
             fig1.update_layout(
-                height     = 400,
+                height     = 380,
                 template   = "plotly_white",
                 showlegend = True,
                 legend     = dict(orientation="v", x=1.0, y=0.5),
@@ -95,19 +85,18 @@ with col1:
             )
             st.plotly_chart(fig1, width="stretch")
 
-            # ✅ Small segments shown as metric cards below chart
+            # ✅ Small segments as clean metric cards
             if not df_small.empty:
-                st.caption("**Smaller segments (< 2% of buyers):**")
+                st.caption("🔍 **Smaller segments:**")
                 small_cols = st.columns(len(df_small))
                 for i, (_, row) in enumerate(df_small.iterrows()):
-                    # Clean emoji from label for metric title
-                    clean_label = str(row[seg_col])
-                    for emoji in ["😴","⚠️","💛","🏆","😐","🆕","💀","🌱","👑"]:
-                        clean_label = clean_label.replace(emoji, "").strip()
+                    name = str(row[seg_col])
+                    for e in ["😴","⚠️","💛","🏆","😐","🆕","💀","🌱","👑","🎯"]:
+                        name = name.replace(e, "").strip()
                     small_cols[i].metric(
-                        label = clean_label,
-                        value = f"{int(row[user_col]):,}",
-                        delta = f"{row['pct']}% of buyers",
+                        label      = name,
+                        value      = f"{int(row[user_col]):,} users",
+                        delta      = f"{row['pct']}%",
                         delta_color = "off",
                     )
     with col2:
