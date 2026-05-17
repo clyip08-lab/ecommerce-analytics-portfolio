@@ -43,35 +43,72 @@ def show():
         st.markdown("---")
         col1, col2 = st.columns(2)
 
-        with col1: #  Fixed indentation alignment
-            st.subheader("🍩 Segment Distribution")
-            if user_col in df_seg.columns:
-                # Filter out zero-user segments
-                df_pie = df_seg[df_seg[user_col] > 0].copy()
+        with col1:
+        st.subheader("🍩 Segment Distribution")
+        if user_col in df_seg.columns:
+            df_pie = df_seg[df_seg[user_col] > 0].copy()
+            df_pie = df_pie.sort_values(user_col, ascending=False).reset_index(drop=True)
 
-                # Show actual user counts, not percentages
-                fig1 = px.pie(
-                    df_pie,
-                    names=seg_col,
-                    values=user_col,
-                    hole=0.45,
-                    color_discrete_sequence=[
-                        "#4361ee", "#f72585", "#7209b7",
-                        "#4cc9f0", "#3a0ca3", "#560bad", "#480ca8"
-                    ],
-                )
-                fig1.update_traces(
-                    texttemplate="%{label}<br>%{value:,} users<br>(%{percent})",
-                    textposition="outside",
-                    pull=[0.05] * len(df_pie),
-                )
-                fig1.update_layout(
-                    height=420,
-                    template="plotly_white",
-                    showlegend=True,
-                    legend=dict(orientation="v", x=1.05),
-                )
-                st.plotly_chart(fig1, width="stretch")
+            pie_total      = df_pie[user_col].sum()
+            df_pie["pct"]  = (df_pie[user_col] / pie_total * 100).round(1)
+            df_large       = df_pie[df_pie["pct"] >= 2].copy()
+            df_small       = df_pie[df_pie["pct"] <  2].copy()
+
+            fig1 = px.pie(
+                df_pie,
+                names  = seg_col,
+                values = user_col,
+                hole   = 0.45,
+                color_discrete_sequence = [
+                    "#4361ee","#7209b7","#f72585",
+                    "#4cc9f0","#3a0ca3","#560bad","#480ca8"
+                ],
+            )
+
+            # ✅ Build custom text — empty string for small segments
+            custom_text = []
+            for _, row in df_pie.iterrows():
+                if row["pct"] >= 2:
+                    custom_text.append(f"{row['pct']}%")
+                else:
+                    custom_text.append("")
+
+            fig1.update_traces(
+                text             = custom_text,
+                textinfo         = "text",
+                textposition     = "inside",
+                insidetextanchor = "middle",
+                hovertemplate    = (
+                    "<b>%{label}</b><br>"
+                    "Users: %{value:,}<br>"
+                    "Share: %{percent:.1%}"
+                    "<extra></extra>"
+                ),
+            )
+            fig1.update_layout(
+                height     = 400,
+                template   = "plotly_white",
+                showlegend = True,
+                legend     = dict(orientation="v", x=1.0, y=0.5),
+                margin     = dict(t=10, b=10, l=10, r=150),
+            )
+            st.plotly_chart(fig1, width="stretch")
+
+            # ✅ Small segments shown as metric cards below chart
+            if not df_small.empty:
+                st.caption("**Smaller segments (< 2% of buyers):**")
+                small_cols = st.columns(len(df_small))
+                for i, (_, row) in enumerate(df_small.iterrows()):
+                    # Clean emoji from label for metric title
+                    clean_label = str(row[seg_col])
+                    for emoji in ["😴","⚠️","💛","🏆","😐","🆕","💀","🌱","👑"]:
+                        clean_label = clean_label.replace(emoji, "").strip()
+                    small_cols[i].metric(
+                        label = clean_label,
+                        value = f"{int(row[user_col]):,}",
+                        delta = f"{row['pct']}% of buyers",
+                        delta_color = "off",
+                    )
                 
         with col2: # Fixed indentation alignment
             st.subheader("💰 Revenue by Segment")
@@ -92,7 +129,7 @@ def show():
                 )
                 fig2.update_layout(height=380, showlegend=False)
                 st.plotly_chart(fig2, width='stretch')
-                
+
     st.markdown("---")
 
     # ── Conversion funnel trend ──
