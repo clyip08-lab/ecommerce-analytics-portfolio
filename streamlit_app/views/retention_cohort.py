@@ -125,40 +125,74 @@ def show():
     st.subheader("Cohort Retention Heatmap")
     df_cohort = load_csv("analysis_cohort_long.csv")
     if not df_cohort.empty:
-        cohort_col = next((c for c in df_cohort.columns if "cohort" in c.lower()), df_cohort.columns[0])
-        period_col = next((c for c in df_cohort.columns if "label" in c.lower() or "period" in c.lower()), None)
-        ret_col    = next((c for c in df_cohort.columns if "retention" in c.lower() or "pct" in c.lower()), None)
+        # ✅ Force all columns to correct types
+        df_cohort["cohort_month"]  = df_cohort["cohort_month"].astype(str).str[:7]
+        df_cohort["period_label"]  = df_cohort["period_label"].astype(str)
+        df_cohort["retention_pct"] = pd.to_numeric(df_cohort["retention_pct"], errors="coerce")
 
-        if period_col and ret_col:
-            pivot = df_cohort.pivot_table(
-                index=cohort_col, columns=period_col,
-                values=ret_col, aggfunc="mean",
-            )
-            try:
-                cols_sorted = sorted(pivot.columns, key=lambda x: int(str(x).split()[-1]))
-                pivot = pivot[cols_sorted]
-            except Exception:
-                pass
+        # ✅ Get unique sorted values
+        cohorts = sorted(df_cohort["cohort_month"].unique())
+        periods = sorted(
+            df_cohort["period_label"].unique(),
+            key=lambda x: int(x.split()[-1])
+        )
 
-            fig3 = go.Figure(go.Heatmap(
-                z=pivot.values,
-                x=pivot.columns.tolist(),
-                y=pivot.index.tolist(),
-                colorscale="Blues",
-                text=pivot.round(1).values,
-                texttemplate="%{text}%",
-                showscale=True,
-            ))
-            fig3.update_layout(
-                height=350, template="plotly_white",
-                xaxis=dict(title="Period"),
-                yaxis=dict(title="Cohort"),
-            )
-            st.plotly_chart(fig3, width="stretch")
-            st.info(
-                "Key Insight: Low Month-1 retention means most users do not return "
-                "after their first purchase. Opportunity: post-purchase email campaigns."
-            )
+        # ✅ Build z matrix directly without pivot
+        z_vals = []
+        z_text = []
+        for cohort in cohorts:
+            row_vals = []
+            row_text = []
+            for period in periods:
+                mask = (
+                    (df_cohort["cohort_month"] == cohort) &
+                    (df_cohort["period_label"] == period)
+                )
+                matched = df_cohort.loc[mask, "retention_pct"]
+                if len(matched) > 0:
+                    val = float(matched.iloc[0])
+                    row_vals.append(val)
+                    row_text.append(f"{val:.1f}%")
+                else:
+                    row_vals.append(0)
+                    row_text.append("")
+            z_vals.append(row_vals)
+            z_text.append(row_text)
+
+        fig3 = go.Figure(go.Heatmap(
+            z            = z_vals,
+            x            = periods,
+            y            = cohorts,
+            colorscale   = "Blues",
+            text         = z_text,
+            texttemplate = "%{text}",
+            showscale    = True,
+            zmin         = 0,
+            zmax         = 100,
+        ))
+        fig3.update_layout(
+            height   = 280,
+            template = "plotly_white",
+            xaxis    = dict(title="Period", type="category"),
+            yaxis    = dict(title="Cohort Month", type="category"),
+            margin   = dict(t=20, b=40, l=80, r=20),
+        )
+        st.plotly_chart(fig3, width="stretch")
+
+        # Key metrics
+        m1_data = df_cohort[df_cohort["period_label"] == "Month 1"]["retention_pct"]
+        if len(m1_data) > 0:
+            avg_m1 = float(m1_data.mean())
+            col_a, col_b = st.columns(2)
+            col_a.metric("Month-0 Retention", "100.0%", "Baseline")
+            col_b.metric("Month-1 Retention", f"{avg_m1:.2f}%",
+                         f"{avg_m1 - 100:.2f}% vs baseline",
+                         delta_color="inverse")
+        st.info(
+            "Key Insight: Only 0.37% of Oct buyers returned in Nov. "
+            "Near-zero retention means acquisition cost is wasted without a "
+            "post-purchase retention strategy — email flows, loyalty programs."
+        )
     else:
         st.info("Cohort data not available.")
 
