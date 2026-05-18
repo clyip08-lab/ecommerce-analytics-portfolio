@@ -1,32 +1,35 @@
-\# 🛒 E-Commerce Analytics Portfolio Project
+# 🛒 E-Commerce Analytics Portfolio Project
+> **End-to-end analytics system built on 42M+ row e-commerce event data**
 
+> **Showcasing data engineering, SQL analytics, BI dashboarding, and product analytics thinking.**
 
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat&logo=mysql&logoColor=white)
+![Pandas](https://img.shields.io/badge/Pandas-150458?style=flat&logo=pandas&logoColor=white)
+![Plotly](https://img.shields.io/badge/Plotly-3F4F75?style=flat&logo=plotly&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=flat&logo=streamlit&logoColor=white)
+![PowerBI](https://img.shields.io/badge/Power%20BI-F2C811?style=flat&logo=powerbi&logoColor=black)
 
-> \*\*End-to-end analytics system built on 42M+ row e-commerce event data\*\*  
-
-> Showcasing data engineering, SQL analytics, BI dashboarding, and product analytics thinking.
 ---
 
-## 📊 Live Demo
-🔗 https://clyip08-lab-ecommerce-analytics-portfol-streamlit-appapp-g6xeev.streamlit.app/
+## Live Demo
+
+**[View Live Streamlit Dashboard](https://clyip08-lab-ecommerce-analytics-portfol-streamlit-appapp-g6xeev.streamlit.app)**
 
 ---
-\## 📌 Project Overview
 
+## Project Overview
 
-
-This project simulates a \*\*real-world e-commerce analytics workflow\*\* — from raw data ingestion
-
+This project simulates a **real-world e-commerce analytics workflow** — from raw data ingestion
 to executive dashboards and customer segmentation — using an industry-standard tech stack.
 
+**Dataset:** 42M+ user events (views, cart adds, purchases) from Oct-Nov 2019
+**Source:** [eCommerce behavior data from multi-category store](https://www.kaggle.com/datasets/mkechinov/ecommerce-behavior-data-from-multi-category-store)
 
+---
 
-\*\*Dataset:\*\* 42M+ user events (views, cart adds, purchases) from Oct–Nov 2019  
-
-\*\*Source:\*\* \[eCommerce behavior data from multi-category store](https://www.kaggle.com/datasets/mkechinov/ecommerce-behavior-data-from-multi-category-store)
-
-\## 🏗️ Architecture
-```text
+## Architecture
+```
 Raw CSV (42M rows)
 │
 ▼
@@ -48,7 +51,6 @@ KPI Semantic Layer       ← 6 SQL views = single source of truth (Phase 5)
 ├──→ Advanced Analytics   (RFM, Pareto, funnel)     (Phase 7)
 ├──→ Power BI Dashboard   (4-page interactive BI)   (Phase 8)
 └──→ Streamlit App        (live web dashboard)      (Phase 9)
----
 ```
 ## 📊 Key Business Findings
 
@@ -103,7 +105,7 @@ ecommerce-analytics-portfolio/
 ├── streamlit_app/
 │   ├── app.py
 │   ├── db.py
-│   └── pages/
+│   └── views/
 │       ├── executive.py
 │       ├── product_brand.py
 │       ├── customer_segments.py
@@ -120,72 +122,94 @@ ecommerce-analytics-portfolio/
 └── README.md
 ```
 
-## 🛠️ Tech Stack
+---
+
+## Tech Stack
 
 | Tool | Purpose |
 |---|---|
-| **Python** (pandas, numpy) | Data cleaning + feature engineering |
-| **Plotly** | Interactive visualizations |
-| **MySQL 9.x** | Relational database + star schema |
-| **SQLAlchemy** | ETL pipeline (Python → MySQL) |
-| **Power BI** | Executive BI dashboard |
-| **Streamlit** | Live web analytics app |
-
----
-## ⚙️ Local Setup
-
-<details>
-<summary>Click to expand setup instructions</summary>
-
-1. Clone the repo and create a virtual environment
-2. Run `pip install -r requirements.txt`
-3. Create `.env` with your MySQL credentials
-4. Run notebooks Phase 1–4 to load data into MySQL
-5. Run `streamlit run streamlit_app/app.py`
-
-Full instructions in each notebook.
-</details>
+| Python (pandas, numpy) | Data cleaning and feature engineering |
+| Plotly | Interactive visualizations |
+| MySQL 9.x | Relational database and star schema |
+| SQLAlchemy | ETL pipeline (Python to MySQL) |
+| Power BI | Executive BI dashboard |
+| Streamlit | Live web analytics app |
 
 ---
 
-## 📈 Dashboard Preview
+## Dashboard Pages
 
 | Page | Description |
 |---|---|
 | Executive Overview | Revenue KPIs, orders trend, hourly patterns |
-| Product & Brand | Top brands, category treemap, Pareto 80/20 |
-| Customer Segments | RFM scoring, segment treemap, funnel drop-off |
-| Retention & Cohort | Cohort heatmap, retention segments, session depth |
+| Product and Brand | Top brands, category treemap, Pareto 80/20 |
+| Customer Segments | RFM scoring, segment bars, funnel drop-off |
+| Retention and Cohort | Cohort heatmap, retention segments, session depth |
 
 ---
 
-## 🧠 Analytical Methods Used
+## Analytical Methods
 
-- **Stratified User-Based Sampling** — preserves behavioral chains
-- **Star Schema Modeling** — fact + dimension tables for BI
-- **KPI Semantic Layer** — 6 SQL views as single source of truth
-- **RFM Segmentation** — quintile scoring → 8 customer segments
-- **Cohort Analysis** — monthly retention tracking
-- **Pareto 80/20 Analysis** — product + brand revenue concentration
-- **Funnel Analysis** — view → cart → purchase drop-off by category
-
----
-## Key Analytical Lessons
-Sampling Bias in Retention Analysis
-Initial event-level sampling significantly underestimated retention rates because future user events were excluded from the sampled dataset.
-To improve longitudinal consistency:
-- User-level sampling was adopted
-- Full event histories were preserved
-- Cohort tracking accuracy improved
-This highlighted the importance of selecting sampling strategies based on analytical objectives rather than computational convenience.
----
-## 👤 About
-
-Built by **YIP CHEN LENG**  
-Targeting: BI Analyst / Data Analyst / E-Commerce Analyst roles  
-📧 clyip08@gmail.com  
-🔗https://www.linkedin.com/in/yipcl
+- **Stratified User-Based Sampling** - preserves behavioral chains for valid funnel and cohort analysis
+- **Star Schema Modeling** - fact and dimension tables for efficient BI querying
+- **KPI Semantic Layer** - 6 SQL views as single source of truth across all tools
+- **RFM Segmentation** - quintile scoring producing 8 actionable customer segments
+- **Cohort Analysis** - monthly retention tracking to measure loyalty
+- **Pareto 80/20 Analysis** - product and brand revenue concentration
+- **Funnel Analysis** - view to cart to purchase drop-off by category
 
 ---
 
-*Dataset source: Kaggle — eCommerce behavior data from multi-category store*
+## Sampling Methodology
+
+<details>
+<summary>Why user-based sampling? (click to expand)</summary>
+
+**Problem:** Event-type sampling breaks user behavioral chains.
+A user\'s view, cart, and purchase scatter across different samples,
+making funnel and retention metrics invalid.
+
+**Solution:** User-based sampling - select 50,000 users randomly,
+preserve ALL their events intact.
+
+**Result:** Valid cohort analysis, accurate RFM scoring,
+trustworthy conversion funnel.
+
+**Lesson:** Design your sample around your analytical objective,
+not computational convenience.
+
+</details>
+
+---
+
+## Local Setup
+
+<details>
+<summary>Click to expand setup instructions</summary>
+
+1. Clone the repo
+2. Create virtual environment: `python -m venv venv`
+3. Activate: `venv\\Scripts\\activate` (Windows) or `source venv/bin/activate` (Mac)
+4. Install: `pip install -r requirements.txt`
+5. Create `.env` file with MySQL credentials
+6. Run notebooks Phase 1-4 in order to load data
+7. Run: `streamlit run streamlit_app/app.py`
+
+</details>
+
+---
+
+## About
+
+Built by **YIP CHEN LENG**
+
+Targeting: BI Analyst / Data Analyst / E-Commerce Analyst roles
+
+Email: clyip08@gmail.com
+
+LinkedIn: https://www.linkedin.com/in/yipcl
+
+---
+
+*Dataset: Kaggle - eCommerce behavior data from multi-category store*
+'''
