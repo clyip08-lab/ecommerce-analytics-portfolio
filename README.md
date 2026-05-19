@@ -27,7 +27,42 @@ to executive dashboards and customer segmentation — using an industry-standard
 **Source:** [eCommerce behavior data from multi-category store](https://www.kaggle.com/datasets/mkechinov/ecommerce-behavior-data-from-multi-category-store)
 
 ---
+## Business Questions Answered
 
+This project was designed to answer 6 core e-commerce business questions:
+
+### Revenue & Growth
+> **Q1: How is the business performing month-over-month?**
+Revenue grew from Oct to Nov 2019. Total sample revenue reached $7.4M
+across 24,602 orders with an average order value of $301.48.
+
+> **Q2: Which products and categories drive the most revenue?**
+Electronics dominates at 75.2% of revenue ($5.58M).
+Apple leads all brands. Top 489 products (7.6% of catalogue)
+generate 80% of revenue — a stronger Pareto concentration than typical.
+
+### Customer Behaviour
+> **Q3: Where do users drop off in the purchase funnel?**
+The bottleneck is View-to-Cart (16.7%), not Cart-to-Purchase (78.8%).
+Users who add to cart almost always complete the purchase.
+Investment should go into product pages, not checkout optimisation.
+
+> **Q4: When are users most active and likely to purchase?**
+Peak purchase hours are 10am-2pm. Mid-week shows higher engagement.
+Promotional emails should be scheduled for 9am delivery on weekdays.
+
+### Retention & Loyalty
+> **Q5: Are customers coming back after their first purchase?**
+No. Month-1 retention is only 0.37% — critically low.
+99.63% of buyers never return. This is the single biggest
+revenue growth opportunity in the entire dataset.
+
+> **Q6: Who are the most valuable customers?**
+RFM segmentation reveals Champions and Loyal Customers
+represent a small user base but drive disproportionate revenue.
+43.5% of buyers are in "Needs Attention" — the largest
+re-engagement opportunity.
+---
 ## Architecture
 ```
 Raw CSV (42M rows)
