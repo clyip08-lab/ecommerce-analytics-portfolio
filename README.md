@@ -53,6 +53,7 @@ KPI Semantic Layer       ← 6 SQL views = single source of truth (Phase 5)
 └──→ Streamlit App        (live web dashboard)      (Phase 9)
 ```
 ---
+
 ## 📊 Key Business Findings
 
 | Finding | Actual Number | Insight | Recommendation |
@@ -72,15 +73,14 @@ KPI Semantic Layer       ← 6 SQL views = single source of truth (Phase 5)
 
 ## Business Implications
 
-| # | Finding | Implication | Priority |
-|---|---|---|---|
-| 1 | 0.37% Month-1 retention | Every acquired user is a one-time cost with no LTV. Post-purchase email flow is urgent. | CRITICAL |
-| 2 | 88% users never buy | Acquisition budget largely wasted. Shift 20% to retargeting and win-back. | HIGH |
-| 3 | Electronics = 75% revenue | Single-category dependency. One bad quarter = revenue crisis. Diversify. | HIGH |
-| 4 | Top 489 products = 80% revenue | These SKUs must never go out of stock. Set automated alerts. | HIGH |
-| 5 | Cart→Purchase = 78.79% | Checkout is NOT the problem. Invest in product pages, not checkout optimisation. | MEDIUM |
-| 6 | Avg session: buyers click 8x vs 4.5x non-buyers | Buyers are decisive. Non-buyers need better filtering and product discovery. | MEDIUM |
-
+| # | Finding | Business Implication | Priority |
+|:---|:---|:---|:---:|
+| 1 | 0.37% Month-1 retention | Growth depends entirely on acquisition — repeat purchasing is near-zero. Post-purchase email flow and loyalty programme are urgent. | **CRITICAL** |
+| 2 | 88% visitors never purchase | Large unconverted audience already exists in the funnel. Retargeting and wishlist features could convert without additional acquisition spend. | **HIGH** |
+| 3 | Electronics = 75% of revenue | Single-category dependency creates disproportionate risk. A 20% electronics decline equals 15% total revenue loss. | **HIGH** |
+| 4 | Top 489 products = 80% revenue | Revenue is highly concentrated. Stockouts or page issues on these SKUs directly threaten the majority of revenue. | **HIGH** |
+| 5 | Cart → Purchase = 78.79% | Conversion bottleneck occurs before cart, not at checkout. Product pages, imagery and discovery should be prioritised over checkout optimisation. | **MEDIUM** |
+| 6 | Buyers click 8x vs non-buyers 4.5x | Deeper site engagement correlates with purchase. Improving product recommendations and filters may lift conversion among hesitant browsers. | **MEDIUM** |
 ---
 ## 🗂️ Project Structure
 
@@ -134,7 +134,6 @@ ecommerce-analytics-portfolio/
 ├── requirements.txt
 └── README.md
 ```
-
 ---
 
 ## Tech Stack
