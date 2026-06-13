@@ -1,5 +1,5 @@
 # 🛒 E-Commerce Analytics Portfolio Project
-> **End-to-end analytics system built on 42M+ row e-commerce event data**
+> **End-to-end analytics system built on 110M+ row e-commerce event data**
 
 > **Showcasing data engineering, SQL analytics, BI dashboarding, and product analytics thinking.**
 
@@ -23,7 +23,7 @@
 This project simulates a **real-world e-commerce analytics workflow** — from raw data ingestion
 to executive dashboards and customer segmentation — using an industry-standard tech stack.
 
-**Dataset:** 42M+ user events (views, cart adds, purchases) from Oct-Nov 2019
+**Dataset:** 109.9M user events (views, cart adds, purchases) from Oct-Nov 2019
 **Source:** [eCommerce behavior data from multi-category store](https://www.kaggle.com/datasets/mkechinov/ecommerce-behavior-data-from-multi-category-store)
 
 ---
