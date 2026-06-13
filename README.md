@@ -65,7 +65,7 @@ re-engagement opportunity.
 ---
 ## Architecture
 ```
-Raw CSV (42M rows)
+Raw CSV (110M rows: Oct 42.4M + Nov 67.5M)
 │
 ▼
 Python Sampling          ← Stratified user-based sampling (Phase 1)
@@ -216,8 +216,8 @@ ecommerce-analytics-portfolio/
 A user\'s view, cart, and purchase scatter across different samples,
 making funnel and retention metrics invalid.
 
-**Solution:** User-based sampling - select 50,000 users randomly,
-preserve ALL their events intact.
+**Solution:** User-based sampling - select 99,693 users randomly,
+preserve ALL their events intact (~1.6M events total).
 
 **Result:** Valid cohort analysis, accurate RFM scoring,
 trustworthy conversion funnel.
