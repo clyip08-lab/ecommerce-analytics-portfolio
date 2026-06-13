@@ -23,7 +23,9 @@
 This project simulates a **real-world e-commerce analytics workflow** — from raw data ingestion
 to executive dashboards and customer segmentation — using an industry-standard tech stack.
 
-**Dataset:** 109.9M user events (views, cart adds, purchases) from Oct-Nov 2019
+**Dataset:** 109.9M raw events — Oct: 42.4M rows + Nov: 67.5M rows (2019)
+**Analytical Sample:** 99,693 users → 1,605,102 events via user-based stratified sampling
+**Sampling Rationale:** Preserves complete behavioral chains for valid funnel, RFM and cohort analysis
 **Source:** [eCommerce behavior data from multi-category store](https://www.kaggle.com/datasets/mkechinov/ecommerce-behavior-data-from-multi-category-store)
 
 ---
@@ -33,8 +35,7 @@ This project was designed to answer 6 core e-commerce business questions:
 
 ### Revenue & Growth
 > **Q1: How is the business performing month-over-month?**
-Revenue grew from Oct to Nov 2019. Total sample revenue reached $7.4M
-across 24,602 orders with an average order value of $301.48.
+Revenue grew from Oct to Nov 2019. Within the analytical sample (99,693 users), total revenue reached $7.4M across 24,602 orders with an average order value of $301.48.
 
 > **Q2: Which products and categories drive the most revenue?**
 Electronics dominates at 75.2% of revenue ($5.58M).
@@ -254,7 +255,7 @@ Targeting: BI Analyst / Data Analyst / E-Commerce Analyst roles
 
 Email: clyip08@gmail.com
 
-LinkedIn: https://www.linkedin.com/in/yipcl
+LinkedIn: [linkedin.com/in/yipcl](https://www.linkedin.com/in/yipcl)
 
 ---
 
