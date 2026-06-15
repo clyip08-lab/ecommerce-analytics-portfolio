@@ -356,8 +356,6 @@ One sampling design does not automatically support every type of analysis.
 
 Built by **YIP CHEN LENG**
 
-Targeting: BI Analyst / Data Analyst / E-Commerce Analyst roles
-
 Email: clyip08@gmail.com
 
 LinkedIn: [linkedin.com/in/yipcl](https://www.linkedin.com/in/yipcl)
