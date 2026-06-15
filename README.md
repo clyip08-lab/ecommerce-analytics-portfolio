@@ -20,101 +20,160 @@
 
 ## Project Overview
 
-This project simulates a **real-world e-commerce analytics workflow** — from raw data ingestion
-to executive dashboards and customer segmentation — using an industry-standard tech stack.
+This is my first **AI-assisted end-to-end e-commerce analytics learning project**.
+It was created to practise the workflow from data preparation and analytical
+modelling to SQL metrics, dashboards, validation, and business interpretation.
 
-**Dataset:** 109.9M raw events — Oct: 42.4M rows + Nov: 67.5M rows (2019)
-**Analytical Sample:** 99,693 users → 1,605,102 events via monthly user-level random sampling
-**Sampling Rationale:** Preserves complete behavioral chains for valid funnel, RFM and cohort analysis
+**Raw Dataset:** Approximately 109.9M events across October and November 2019
+
+**Analytical Sample:** 99,693 unique users and approximately 1.6M events
+
+**Sampling Method:** 50,000 users were selected independently within each month
+using monthly user-level random sampling. Events belonging to the selected users
+were retained within that sampled month.
+
+**Sampling Purpose:** User-level sampling preserves within-month event histories
+for selected users better than random event-row sampling.
+
+**Important Limitation:** Because October and November users were sampled
+independently, the current dataset cannot support a reliable cross-month retention
+rate or complete full-period RFM analysis. The current stage analysis is also
+directional rather than a strict sequential funnel.
+
 **Source:** [eCommerce behavior data from multi-category store](https://www.kaggle.com/datasets/mkechinov/ecommerce-behavior-data-from-multi-category-store)
 
 ---
+
 ## Exploratory Business Questions
 
-This project was designed to answer 6 core e-commerce business questions:
+The project explores several e-commerce questions using the analytical sample.
+The results should be interpreted together with the documented methodological limitations.
 
-### Revenue & Growth
-> **Q1: How is the business performing month-over-month?**
-Revenue grew from Oct to Nov 2019. Within the analytical sample (99,693 users), total revenue reached $7.4M across 24,602 orders with an average order value of $301.48.
+### Purchase Activity and Product Performance
 
-> **Q2: Which products and categories drive the most revenue?**
-Electronics dominates at 75.2% of revenue ($5.58M).
-Apple leads all brands. Top 489 products (7.6% of products with observed purchases in the analytical sample)
-generate 80% of revenue — a stronger Pareto concentration than typical.
+> **Q1: How did observed purchase activity change from October to November?**
+>
+> The analytical sample contains approximately $7.4M in observed purchase value
+> across 24,602 purchase events.
+>
+> Because the dataset does not contain an `order_id`, purchase events are used
+> as a proxy and should not be described as confirmed orders.
+
+> **Q2: Which products and categories contributed most to observed purchase value?**
+>
+> Electronics accounted for approximately 75.2% of observed purchase value
+> in the analytical sample.
+>
+> The top 489 products, around 7.6% of products with observed purchases in
+> the sample, accounted for 80% of observed purchase value.
+>
+> This indicates concentration within the sample but does not represent
+> the complete platform catalogue.
 
 ### Customer Behaviour
-> **Q3: Where do users drop off in the purchase funnel?**
-Monthly stage-participation counts show a larger gap before cart.
-This is a hypothesis to investigate, not a confirmed bottleneck.
-A same-session time-ordered funnel is required to confirm.
 
-> **Q4: When are users most active and likely to purchase?**
-Peak purchase hours are 10am-2pm. Mid-week shows higher engagement.
-The hourly pattern (UTC) may support a campaign-timing hypothesis after confirming customer time zones and conducting a controlled test
+> **Q3: Where is the largest stage-participation gap?**
+>
+> Monthly distinct-user counts show the largest numerical gap between viewing
+> and cart activity.
+>
+> However, the current calculation does not enforce a same-session,
+> same-product and time-ordered journey.
+>
+> It therefore creates a hypothesis to investigate product discovery,
+> traffic relevance, offer attractiveness and price, rather than confirming
+> a sequential conversion bottleneck.
 
-### Retention & Loyalty
-> **Q5: Are customers coming back after their first purchase?**
-No. Month-1 retention is only 0.37% — critically low.
-99.63% of buyers never return. This is the single biggest
-revenue growth opportunity in the entire dataset.
+> **Q4: When were purchase events most frequently observed?**
+>
+> Purchase-event activity was highest between approximately 10am and 2pm UTC.
+>
+> This may support a campaign-timing hypothesis only after customer time zones
+> are confirmed and the timing is tested through a controlled experiment.
 
-> **Q6: Who are the most valuable customers?**
-RFM segmentation reveals Champions and Loyal Customers
-represent a small user base but drive disproportionate revenue.
-43.5% of buyers are in "Needs Attention" — the largest
-re-engagement opportunity.
+### Customer Analysis
+
+> **Q5: Can the current sample measure cross-month retention?**
+>
+> No. October and November users were sampled independently, so cross-month
+> overlap mainly reflects the sampling design rather than a reliable retention rate.
+>
+> A redesigned cross-month user sample is required.
+
+> **Q6: What does the RFM analysis show?**
+>
+> The project contains exploratory RFM segmentation based on observed purchase behaviour.
+>
+> Because the dataset covers only two months and users were sampled independently
+> by month, the segments should be validated before they are used for targeting
+> or campaign decisions.
+
 ---
+
 ## Architecture
+
+```text
+Raw CSV
+Approximately 110M events across October and November 2019
+│
+▼
+Monthly User-Level Random Sampling
+50,000 users selected independently per month
+│
+▼
+Data Cleaning and Feature Engineering
+Deduplication, null review, timestamp and event features
+│
+▼
+Star-Schema Learning Model
+fact_events plus supporting dimension tables
+│
+▼
+MySQL Database
+AI-assisted ETL workflow using SQLAlchemy
+│
+▼
+Reusable KPI Views
+Lightweight SQL views for selected metric logic
+│
+├──→ Purchase and Product Analysis
+├──→ Exploratory RFM and Pareto Analysis
+├──→ Directional Stage-Participation Analysis
+├──→ Power BI Learning Dashboard
+└──→ Streamlit Exploratory Dashboard
 ```
-Raw CSV (110M rows: Oct 42.4M + Nov 67.5M)
-│
-▼
-Python Sampling          ← Monthly user-level random sampling with distribution checks (Phase 1)
-│
-▼
-Data Cleaning            ← Deduplication, nulls, feature engineering (Phase 2)
-│
-▼
-Star Schema Design       ← fact_events + 4 dimension tables (Phase 3)
-│
-▼
-MySQL Database           ← ETL pipeline via SQLAlchemy (Phase 4)
-│
-▼
-KPI Semantic Layer       ← 6 reusable SQL views for consistent metric logic (Phase 5)
-│
-├──→ Core Analysis        (trends, cohort, product) (Phase 6)
-├──→ Advanced Analytics   (RFM, Pareto, funnel)     (Phase 7)
-├──→ Power BI Dashboard   (4-page interactive BI)   (Phase 8)
-└──→ Streamlit App        (live web dashboard)      (Phase 9)
-```
----
-
-## 📊 Key Business Findings
-
-| Finding | Actual Number | Insight | Recommendation |
-|---|---|---|---|
-| **Overall conversion rate** | **11.72%** | 1 in 9 users purchases — healthy for e-commerce | A/B test product pages to push above 15% |
-| **View → Cart rate** | **16.73%** | Strong browse-to-intent signal | Improve product imagery + descriptions |
-| **Cart → Purchase rate** | **78.79%** | Very high — users who cart mostly buy | Protect checkout UX, minimize friction |
-| **Top category** | **Electronics (75.2% of revenue)** | $5.58M of $7.42M total | Heavy concentration risk — diversify categories |
-| **Avg Order Value** | **$301.48** | High-ticket purchases dominate | Bundle lower-ticket items to protect AOV |
-| **Revenue per User** | **$74.42** | Low vs AOV — most users never buy | Retargeting campaigns for the 88% non-buyers |
-| **Buying Users** | **11,698 of 99,658 (11.7%)** | Small buyer base drives all revenue | Protect + reward existing buyers first |
 
 ---
 
-## Business Implications
+## 📊 Key Observations and Next Analytical Steps
 
-| # | Finding | Business Implication | Priority |
-|:---|:---|:---|:---:|
-| 1 | 0.37% Month-1 retention | Growth depends entirely on acquisition — repeat purchasing is near-zero. Post-purchase email flow and loyalty programme are urgent. | **CRITICAL** |
-| 2 | 88% visitors never purchase | Large unconverted audience already exists in the funnel. Retargeting and wishlist features could convert without additional acquisition spend. | **HIGH** |
-| 3 | Electronics = 75% of revenue | Single-category dependency creates disproportionate risk. A 20% electronics decline equals 15% total revenue loss. | **HIGH** |
-| 4 | Top 489 products = 80% revenue | Revenue is highly concentrated. Stockouts or page issues on these SKUs directly threaten the majority of revenue. | **HIGH** |
-| 5 | Cart → Purchase = 78.79% | Conversion bottleneck occurs before cart, not at checkout. Product pages, imagery and discovery should be prioritised over checkout optimisation. | **MEDIUM** |
-| 6 | Buyers click 8x vs non-buyers 4.5x | Deeper site engagement correlates with purchase. Improving product recommendations and filters may lift conversion among hesitant browsers. | **MEDIUM** |
+| Observation | Sample Result | Appropriate Interpretation | Next Analytical Step |
+|---|---:|---|---|
+| Observed purchase value | Approximately $7.4M | Sum of values recorded on purchase events in the analytical sample | Reconcile against full-data aggregates if available |
+| Purchase events | 24,602 | Purchase-event rows, not confirmed orders because the dataset has no `order_id` | Define an order-level rule if session and timestamp data allow |
+| Average purchase-event value | $301.48 | Average value recorded per purchase event; not confirmed AOV | Analyse variation by month, category and product |
+| Monthly buyer-to-viewer ratio | 11.72% | Directional ratio of distinct monthly buyers to viewers | Build a same-session, same-product and time-ordered funnel |
+| Monthly cart-to-viewer ratio | 16.73% | The largest numerical stage-participation gap appears before cart | Segment by product, traffic source, price and customer type |
+| Monthly buyer-to-carter ratio | 78.79% | Buyer and carter totals are not verified as one sequential journey | Validate event order within the same session and product |
+| Electronics share | 75.2% of observed purchase value | High category concentration within the analytical sample | Review margin, supply, seasonality and full-population data before action |
+| Product concentration | 489 products account for 80% of observed purchase value | Concentration among products with observed purchases in the sample | Monitor availability and product-page performance, then validate stability across periods |
+
 ---
+
+## Analytical Implications and Next Steps
+
+| Area | What the Current Analysis Suggests | What Is Needed Before Action |
+|---|---|---|
+| Stage participation | The largest numerical difference appears between viewing and cart activity | Build a same-session, same-product and time-ordered funnel, then segment the result |
+| Traffic and offer quality | Weak pre-cart participation may relate to traffic relevance, product information, reviews, value perception, availability or price | Compare performance by traffic source, product, customer type, device and price segment |
+| Category concentration | Electronics contributes a large share of observed purchase value in the analytical sample | Review margin, supply risk, business strategy, seasonality and full-population data before action |
+| Product concentration | A relatively small group of products contributes most observed purchase value | Monitor availability and product-page performance, then test whether the concentration is stable across periods |
+| Retention | The independently sampled monthly user sets cannot provide a reliable cross-month retention estimate | Sample users once across the combined period and retrieve all of their cross-month events |
+| RFM | The current segments provide an exploratory view of observed buyer behaviour | Validate the scoring rules, observation period and complete user histories before targeting |
+| Hourly activity | UTC purchase-event patterns may help generate campaign-timing hypotheses | Confirm customer time zones and run a controlled send-time test |
+
+---
+
 ## 🗂️ Project Structure
 
 ```
@@ -123,7 +182,7 @@ ecommerce-analytics-portfolio/
 ├── data/
 │   ├── raw/                          ← Original CSVs (not in Git)
 │   ├── processed/                    ← Cleaned dataset
-│   ├── samples/                      ← Stratified user sample
+│   ├── samples/                      ← Monthly user-level random sample
 │   └── exports/                      ← Star schema + analysis CSVs
 │
 ├── notebooks/
@@ -184,59 +243,93 @@ ecommerce-analytics-portfolio/
 
 ## Dashboard Pages
 
-| Page | Description |
+| Live Streamlit Page | Purpose |
 |---|---|
-| Executive Overview | Revenue KPIs, orders trend, hourly patterns |
-| Product and Brand | Top brands, category treemap, Pareto 80/20 |
-| Customer Segments | RFM scoring, segment bars, funnel drop-off |
-| Retention and Cohort | Cohort heatmap, retention segments, session depth |
+| Executive Overview | Observed purchase-value metrics, purchase-event trends, UTC activity patterns and directional monthly stage participation |
+| Product and Brand | Observed purchase-value comparisons, brand-level ratios, category concentration and Pareto analysis |
+| Customer Segments | Exploratory RFM segment distribution and directional category stage-participation ratios |
+
+The original retention page has been removed from the live navigation pending
+a redesign of the cross-month sampling methodology.
 
 ---
 
 ## Analytical Methods
 
-- **Stratified User-Based Sampling** - preserves behavioral chains for valid funnel and cohort analysis
-- **Star Schema Modeling** - fact and dimension tables for efficient BI querying
-- **KPI Semantic Layer** - 6 SQL views as single source of truth across all tools
-- **RFM Segmentation** - quintile scoring producing 8 actionable customer segments
-- **Cohort Analysis** - monthly retention tracking to measure loyalty
-- **Pareto 80/20 Analysis** - product and brand revenue concentration
-- **Funnel Analysis** - view to cart to purchase drop-off by category
+- **Monthly User-Level Random Sampling** — preserves within-month events for selected users; independently sampled months limit cross-month analysis.
+
+- **Star-Schema Learning Model** — separates the event-level fact table from descriptive product, user, session and date dimensions.
+
+- **Reusable KPI Views** — lightweight SQL views that centralise selected metric logic; they are not a complete enterprise semantic layer or automatic guarantee of correctness.
+
+- **Exploratory RFM Segmentation** — groups customers based on observed purchase behaviour, subject to sampling and observation-period limitations.
+
+- **Retention Prototype** — retained as a learning exercise, but the current monthly sampling method cannot support a reliable retention conclusion.
+
+- **Pareto Analysis** — measures concentration of observed purchase value among products with purchase events in the analytical sample.
+
+- **Directional Stage-Participation Analysis** — compares monthly distinct-user counts across view, cart and purchase stages; it is not a strict sequential funnel.
 
 ---
 
 ## Limitations
 
-| Area | Current Limitation | What Would Be Needed |
+| Area | Current Limitation | Required Improvement |
 |---|---|---|
-| Retention | Monthly samples drawn independently — cross-month overlap reflects sampling design, not true retention | Sample once from combined cross-month user pool |
-| Funnel | Monthly distinct-user stage counts, not sequential same-session funnel | Enforce time-ordered view→cart→purchase within session and product |
-| RFM | Per-month sampling may omit a user's other-month purchases | Cross-month sampling for full-period RFM |
-| Orders | No order_id — purchase events used as proxy | Treat counts as purchase events, not confirmed orders |
-| Pareto | Denominator is sample products with purchases, not full catalogue | Full catalogue size unknown from this dataset |
-| Memory | Full monthly files loaded into memory despite chunked reading | Two-pass scan: collect user_ids first, then filter |
-| Seasonality | Oct-Nov includes 11.11 and Black Friday — not typical months | Full-year data required for seasonality analysis |
-| Timezone | event_time is UTC — hourly patterns cannot map to local behaviour | Confirm customer timezone before campaign timing |
+| Cross-month retention | October and November users were sampled independently, so user overlap cannot be interpreted as a reliable retention rate | Sample users once from the combined cross-month population and retrieve all of their events across both months |
+| RFM analysis | Independent monthly sampling may omit some users' activity from the other month, affecting recency, frequency and monetary values | Use complete cross-month user histories and a longer observation period |
+| Funnel analysis | Current metrics compare monthly distinct-user stage counts and do not enforce a same-session, same-product and time-ordered journey | Build sequential `view → cart → purchase` paths using user, product, session and timestamp fields |
+| Order metrics | The dataset has no formal `order_id`, so purchase events are used as an order proxy | Report purchase-event counts and average purchase-event value, or define a defensible order-level rule |
+| Sampling representativeness | Similar event-type proportions do not prove that all user, product, category and purchase-value distributions are unbiased | Compare additional distributions, repeated samples and full-data aggregates where possible |
+| Product concentration | Pareto results cover products with observed purchases in the analytical sample, not the complete platform catalogue | Validate the concentration using full-population product and purchase data |
+| Time coverage | The dataset covers only October and November 2019 and includes major shopping events such as 11.11 and Black Friday | Use a longer period to evaluate seasonality and normal performance patterns |
+| Time zone | Event timestamps are recorded in UTC, so hourly patterns may not reflect users' local time | Map events to customer time zones before making campaign-timing decisions |
+| Local processing | Monthly files were read in chunks but later combined in memory | Use a two-pass chunked workflow or an analytical engine such as DuckDB for more memory-efficient processing |
 
 ---
-
 ## Sampling Methodology
 
 <details>
-<summary>Why user-based sampling? (click to expand)</summary>
+<summary>Why use monthly user-level sampling? (click to expand)</summary>
 
-**Problem:** Event-type sampling breaks user behavioral chains.
-A user\'s view, cart, and purchase scatter across different samples,
-making funnel and retention metrics invalid.
+**Problem with random event-row sampling:**
 
-**Solution:** User-based sampling - select 99,693 users randomly,
-preserve ALL their events intact (~1.6M events total).
+Randomly selecting individual event rows can exclude other events belonging
+to the same user. This can fragment the user's observed behaviour and weaken
+user-level exploratory analysis.
 
-**Result:** Valid cohort analysis, accurate RFM scoring,
-trustworthy conversion funnel.
+**Current approach:**
 
-**Lesson:** Design your sample around your analytical objective,
-not computational convenience.
+The project selected 50,000 users independently within October and November
+and retained the events belonging to those selected users within each sampled month.
+
+The two monthly samples were then combined, producing 99,693 unique users
+and approximately 1.6 million events.
+
+**What this approach preserves:**
+
+- It preserves the within-month events observed for selected users better than random event-row sampling.
+- It supports exploratory analysis of within-month user activity.
+
+**What this approach does not preserve:**
+
+- It does not guarantee complete user histories across both months.
+- It cannot support a reliable cross-month retention estimate.
+- It may understate full-period RFM frequency, recency and monetary values.
+- It does not make the current stage-participation analysis a sequential funnel.
+- Similar event-type proportions do not prove that every user, product, category or purchase-value distribution is unbiased.
+
+**How I would redesign it:**
+
+- For retention and full-period RFM, select users once from the combined cross-month population and retrieve all their events across both months.
+- For a strict funnel, create a session-level dataset and enforce same-user, same-product and timestamp-ordered `view → cart → purchase` sequences.
+- For a more memory-efficient workflow, use a two-pass chunked process: first identify sampled user IDs, then scan the files again and retain only matching rows.
+- Compare repeated samples or full-data aggregates where possible to test whether the main findings are stable.
+
+**Key learning:**
+
+The appropriate sampling method depends on the analytical question.
+One sampling design does not automatically support every type of analysis.
 
 </details>
 
