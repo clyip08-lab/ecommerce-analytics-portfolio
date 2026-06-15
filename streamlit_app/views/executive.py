@@ -99,7 +99,7 @@ def show():
                 {"view": 0, "cart": 1, "purchase": 2}
             )
             df_f = df_f.sort_values("order")
-                        df_f["stage"] = df_f["event_type"].str.capitalize()
+            df_f["stage"] = df_f["event_type"].str.capitalize()
             df_f = df_f.sort_values("order", ascending=False)
 
             fig2 = px.bar(
