@@ -9,7 +9,15 @@ from db import load_csv
 
 def show():
     st.title("Customer Segments")
-    st.markdown("RFM segmentation, conversion funnel, and buyer behaviour.")
+    st.markdown(
+        "Exploratory RFM segmentation and directional monthly "
+        "stage-participation analysis."
+    )
+    st.warning(
+        "RFM results are affected by the two-month observation period "
+        "and independently sampled monthly user sets. "
+        "Segments should be validated before campaign decisions."
+    )
     st.markdown("---")
 
     df_seg = load_csv("analysis_rfm_segments.csv")
@@ -32,10 +40,10 @@ def show():
     top_seg     = df_seg.loc[df_seg[rev_col].idxmax(), seg_col] if rev_col else "N/A"
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Total Buyers",    f"{total_users:,.0f}")
-    c2.metric("Total Revenue",   f"${total_rev:,.0f}")
-    c3.metric("Top Segment",     str(top_seg).split()[-1])
-    c4.metric("Champions Share", f"{champ_share:.1f}%")
+    c1.metric("Observed Users",                f"{total_users:,.0f}")
+    c2.metric("Observed Purchase Value",        f"${total_rev:,.0f}")
+    c3.metric("Highest-Value Segment",         str(top_seg).split()[-1])
+    c4.metric("Champions Purchase Value Share", f"{champ_share:.1f}%")
 
     st.markdown("---")
     col1, col2 = st.columns(2)
@@ -51,13 +59,10 @@ def show():
         )
         fig1 = px.bar(
             df_bar,
-            x="users" if "users" in df_bar.columns else user_col,
-            y=seg_col,
-            orientation="h",
-            color=user_col,
-            color_continuous_scale="Blues",
+            x=user_col, y=seg_col, orientation="h",
+            color=user_col, color_continuous_scale="Blues",
             text="label",
-            labels={user_col: "Users", seg_col: "Segment"},
+            labels={user_col:"Users", seg_col:"Segment"},
             template="plotly_white",
         )
         fig1.update_traces(textposition="outside", cliponaxis=False)
@@ -65,14 +70,14 @@ def show():
         st.plotly_chart(fig1, width="stretch")
 
     with col2:
-        st.subheader("Revenue by Segment")
+        st.subheader("Observed Purchase Value by Segment")
         if rev_col:
             df_rev = df_seg.sort_values(rev_col, ascending=True)
             fig2   = px.bar(
                 df_rev, x=rev_col, y=seg_col, orientation="h",
                 color=rev_col, color_continuous_scale="Purples",
                 text=rev_col,
-                labels={rev_col: "Revenue ($)", seg_col: "Segment"},
+                labels={rev_col:"Observed Purchase Value ($)", seg_col:"Segment"},
                 template="plotly_white",
             )
             fig2.update_traces(texttemplate="$%{text:,.0f}", textposition="outside")
@@ -80,7 +85,7 @@ def show():
             st.plotly_chart(fig2, width="stretch")
 
     st.markdown("---")
-    st.subheader("Segment Insights")
+    st.subheader("Exploratory Segment Notes")
 
     champ_row = df_seg[df_seg[seg_col].str.contains("Champion", case=False, na=False)]
     if not champ_row.empty and rev_col:
@@ -88,27 +93,34 @@ def show():
         c_rev   = float(champ_row[rev_col].values[0])
         c_share = c_rev / total_rev * 100 if total_rev > 0 else 0
         st.success(
-            f"Champions: {c_users:,} users — {c_share:.1f}% of total revenue. "
-            f"Most valuable customers. Protect and reward them."
+            f"Champions segment: {c_users:,} users, "
+            f"{c_share:.1f}% of observed purchase value in this sample. "
+            f"Validate segment definition and full-period behaviour "
+            f"before designing any campaign."
         )
 
     needs_row = df_seg[df_seg[seg_col].str.contains("Needs", case=False, na=False)]
     if not needs_row.empty:
         n_users = int(needs_row[user_col].values[0])
         n_pct   = n_users / total_users * 100 if total_users > 0 else 0
-        st.warning(
-            f"Needs Attention: {n_users:,} users ({n_pct:.1f}% of buyers). "
-            f"Largest segment, low engagement — prime re-engagement opportunity."
+        st.info(
+            f"Needs Attention: {n_users:,} users ({n_pct:.1f}% of sample). "
+            f"Review recency, frequency, product mix and sampling limitations "
+            f"before designing a re-engagement test."
         )
 
     st.dataframe(df_seg.sort_values(rev_col, ascending=False) if rev_col else df_seg)
 
     st.markdown("---")
-    st.subheader("Funnel Drop-off by Category")
+    st.subheader("Directional Stage-Participation Ratios by Category")
+    st.caption(
+        "Monthly distinct-user counts at each stage. "
+        "Not a strict same-session, same-product sequential funnel."
+    )
     df_funnel_cat = load_csv("analysis_funnel_category.csv")
     if not df_funnel_cat.empty:
         cat_col = next((c for c in df_funnel_cat.columns if "category" in c.lower()), None)
-        v2c_col = next((c for c in df_funnel_cat.columns if "view_to_cart" in c.lower()), None)
+        v2c_col = next((c for c in df_funnel_cat.columns if "view_to_cart"     in c.lower()), None)
         c2p_col = next((c for c in df_funnel_cat.columns if "cart_to_purchase" in c.lower()), None)
         if cat_col and v2c_col and c2p_col:
             fig3 = px.bar(
@@ -116,8 +128,9 @@ def show():
                 y=[v2c_col, c2p_col], barmode="group",
                 color_discrete_sequence=["#4361ee","#f72585"],
                 template="plotly_white",
+                labels={"value":"Ratio (%)","variable":"Stage"},
             )
             fig3.update_layout(height=380, xaxis_tickangle=-30)
             st.plotly_chart(fig3, width="stretch")
     else:
-        st.info("Funnel category data not available.")
+        st.info("Category stage-participation data not available.")

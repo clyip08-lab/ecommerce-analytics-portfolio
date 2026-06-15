@@ -24,11 +24,15 @@ page = st.sidebar.radio(
         "Executive Overview",
         "Product and Brand",
         "Customer Segments",
-        "Retention and Cohort",
     ]
 )
 
 st.sidebar.markdown("---")
+st.sidebar.info(
+    "Exploratory portfolio based on a monthly user-level "
+    "analytical sample. Metric and methodology limitations "
+    "are documented in the GitHub README."
+)
 st.sidebar.caption("Data: Oct-Nov 2019")
 st.sidebar.caption("Built with Python + MySQL + Streamlit")
 
@@ -44,6 +48,7 @@ elif page == "Customer Segments":
     from views import customer_segments
     customer_segments.show()
 
-elif page == "Retention and Cohort":
-    from views import retention_cohort
-    retention_cohort.show()
+# Retention and Cohort temporarily removed pending methodology redesign
+# elif page == "Retention and Cohort":
+#     from views import retention_cohort
+#     retention_cohort.show()
