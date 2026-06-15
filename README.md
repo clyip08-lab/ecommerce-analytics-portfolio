@@ -24,12 +24,12 @@ This project simulates a **real-world e-commerce analytics workflow** — from r
 to executive dashboards and customer segmentation — using an industry-standard tech stack.
 
 **Dataset:** 109.9M raw events — Oct: 42.4M rows + Nov: 67.5M rows (2019)
-**Analytical Sample:** 99,693 users → 1,605,102 events via user-based stratified sampling
+**Analytical Sample:** 99,693 users → 1,605,102 events via monthly user-level random sampling
 **Sampling Rationale:** Preserves complete behavioral chains for valid funnel, RFM and cohort analysis
 **Source:** [eCommerce behavior data from multi-category store](https://www.kaggle.com/datasets/mkechinov/ecommerce-behavior-data-from-multi-category-store)
 
 ---
-## Business Questions Answered
+## Exploratory Business Questions
 
 This project was designed to answer 6 core e-commerce business questions:
 
@@ -39,18 +39,18 @@ Revenue grew from Oct to Nov 2019. Within the analytical sample (99,693 users), 
 
 > **Q2: Which products and categories drive the most revenue?**
 Electronics dominates at 75.2% of revenue ($5.58M).
-Apple leads all brands. Top 489 products (7.6% of catalogue)
+Apple leads all brands. Top 489 products (7.6% of products with observed purchases in the analytical sample)
 generate 80% of revenue — a stronger Pareto concentration than typical.
 
 ### Customer Behaviour
 > **Q3: Where do users drop off in the purchase funnel?**
-The bottleneck is View-to-Cart (16.7%), not Cart-to-Purchase (78.8%).
-Users who add to cart almost always complete the purchase.
-Investment should go into product pages, not checkout optimisation.
+Monthly stage-participation counts show a larger gap before cart.
+This is a hypothesis to investigate, not a confirmed bottleneck.
+A same-session time-ordered funnel is required to confirm.
 
 > **Q4: When are users most active and likely to purchase?**
 Peak purchase hours are 10am-2pm. Mid-week shows higher engagement.
-Promotional emails should be scheduled for 9am delivery on weekdays.
+The hourly pattern (UTC) may support a campaign-timing hypothesis after confirming customer time zones and conducting a controlled test
 
 ### Retention & Loyalty
 > **Q5: Are customers coming back after their first purchase?**
@@ -69,7 +69,7 @@ re-engagement opportunity.
 Raw CSV (110M rows: Oct 42.4M + Nov 67.5M)
 │
 ▼
-Python Sampling          ← Stratified user-based sampling (Phase 1)
+Python Sampling          ← Monthly user-level random sampling with distribution checks (Phase 1)
 │
 ▼
 Data Cleaning            ← Deduplication, nulls, feature engineering (Phase 2)
@@ -81,7 +81,7 @@ Star Schema Design       ← fact_events + 4 dimension tables (Phase 3)
 MySQL Database           ← ETL pipeline via SQLAlchemy (Phase 4)
 │
 ▼
-KPI Semantic Layer       ← 6 SQL views = single source of truth (Phase 5)
+KPI Semantic Layer       ← 6 reusable SQL views for consistent metric logic (Phase 5)
 │
 ├──→ Core Analysis        (trends, cohort, product) (Phase 6)
 ├──→ Advanced Analytics   (RFM, Pareto, funnel)     (Phase 7)
@@ -100,9 +100,6 @@ KPI Semantic Layer       ← 6 SQL views = single source of truth (Phase 5)
 | **Top category** | **Electronics (75.2% of revenue)** | $5.58M of $7.42M total | Heavy concentration risk — diversify categories |
 | **Avg Order Value** | **$301.48** | High-ticket purchases dominate | Bundle lower-ticket items to protect AOV |
 | **Revenue per User** | **$74.42** | Low vs AOV — most users never buy | Retargeting campaigns for the 88% non-buyers |
-| **Retained users** | **307 of 99,658 (0.31%)** | Near-zero cross-month retention | Urgent: launch post-purchase email flow |
-| **One-time buyers** | **11,617 users (11.7%)** | Bought once, never returned | Win-back campaign: offer 2nd purchase discount |
-| **One-time visitors** | **87,734 users (88%)** | Massive unconverted audience | Retargeting + wishlist feature |
 | **Buying Users** | **11,698 of 99,658 (11.7%)** | Small buyer base drives all revenue | Protect + reward existing buyers first |
 
 ---
@@ -205,6 +202,21 @@ ecommerce-analytics-portfolio/
 - **Cohort Analysis** - monthly retention tracking to measure loyalty
 - **Pareto 80/20 Analysis** - product and brand revenue concentration
 - **Funnel Analysis** - view to cart to purchase drop-off by category
+
+---
+
+## Limitations
+
+| Area | Current Limitation | What Would Be Needed |
+|---|---|---|
+| Retention | Monthly samples drawn independently — cross-month overlap reflects sampling design, not true retention | Sample once from combined cross-month user pool |
+| Funnel | Monthly distinct-user stage counts, not sequential same-session funnel | Enforce time-ordered view→cart→purchase within session and product |
+| RFM | Per-month sampling may omit a user's other-month purchases | Cross-month sampling for full-period RFM |
+| Orders | No order_id — purchase events used as proxy | Treat counts as purchase events, not confirmed orders |
+| Pareto | Denominator is sample products with purchases, not full catalogue | Full catalogue size unknown from this dataset |
+| Memory | Full monthly files loaded into memory despite chunked reading | Two-pass scan: collect user_ids first, then filter |
+| Seasonality | Oct-Nov includes 11.11 and Black Friday — not typical months | Full-year data required for seasonality analysis |
+| Timezone | event_time is UTC — hourly patterns cannot map to local behaviour | Confirm customer timezone before campaign timing |
 
 ---
 
