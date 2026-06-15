@@ -52,7 +52,7 @@ def show():
     c2.metric("Purchase Events",           f"{total_ord:,.0f}")
     c3.metric("Avg Purchase-Event Value",  f"${avg_aov:,.2f}")
     c4.metric("Buyer-to-Viewer Ratio",     f"{avg_conv:.2f}%")
-    c5.metric("Observed Users",            f"{latest_users:,.0f}")
+    c5.metric("Observed Users (Latest Month)",            f"{latest_users:,.0f}")
 
     st.markdown("---")
 
@@ -99,13 +99,32 @@ def show():
                 {"view": 0, "cart": 1, "purchase": 2}
             )
             df_f = df_f.sort_values("order")
-            fig2 = go.Figure(go.Funnel(
-                y        = df_f["event_type"].str.capitalize(),
-                x        = df_f["unique_users"],
-                textinfo = "value+percent initial",
-                marker   = dict(color=["#4361ee","#7209b7","#f72585"]),
-            ))
-            fig2.update_layout(height=350, template="plotly_white")
+                        df_f["stage"] = df_f["event_type"].str.capitalize()
+            df_f = df_f.sort_values("order", ascending=False)
+
+            fig2 = px.bar(
+                df_f,
+                x="unique_users",
+                y="stage",
+                orientation="h",
+                text="unique_users",
+                labels={
+                    "unique_users": "Distinct Users",
+                    "stage": "Observed Stage",
+                },
+                template="plotly_white",
+            )
+
+            fig2.update_traces(
+                texttemplate="%{text:,.0f}",
+                textposition="outside",
+            )
+
+            fig2.update_layout(
+                height=350,
+                showlegend=False,
+            )
+
             st.plotly_chart(fig2, width="stretch")
 
     with col2:
@@ -143,7 +162,7 @@ def show():
     st.markdown("---")
 
     # Day of week
-    st.subheader("Purchase Events by Day of Week")
+    st.subheader("Observed Purchase Value by Day of Week")
     if not df_daily.empty and "day_of_week" in df_daily.columns:
         dow_order = ["Monday","Tuesday","Wednesday",
                      "Thursday","Friday","Saturday","Sunday"]

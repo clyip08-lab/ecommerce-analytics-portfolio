@@ -8,7 +8,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from db import load_csv
 
 def show():
-    st.title("Customer Segments")
+    st.title("Exploratory Customer Segments")
     st.markdown(
         "Exploratory RFM segmentation and directional monthly "
         "stage-participation analysis."
@@ -42,8 +42,8 @@ def show():
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Observed Users",                f"{total_users:,.0f}")
     c2.metric("Observed Purchase Value",        f"${total_rev:,.0f}")
-    c3.metric("Highest-Value Segment",         str(top_seg).split()[-1])
-    c4.metric("Champions Purchase Value Share", f"{champ_share:.1f}%")
+    c3.metric("Top Segment by Observed Value",         str(top_seg).split()[-1])
+    c4.metric("Champions Value Share (Exploratory)", f"{champ_share:.1f}%")
 
     st.markdown("---")
     col1, col2 = st.columns(2)
@@ -123,6 +123,14 @@ def show():
         v2c_col = next((c for c in df_funnel_cat.columns if "view_to_cart"     in c.lower()), None)
         c2p_col = next((c for c in df_funnel_cat.columns if "cart_to_purchase" in c.lower()), None)
         if cat_col and v2c_col and c2p_col:
+            df_funnel_cat = df_funnel_cat.copy()
+            ratio_cols = [v2c_col, c2p_col]
+
+            if df_funnel_cat[ratio_cols].max().max() <= 1:
+                df_funnel_cat[ratio_cols] = (
+                    df_funnel_cat[ratio_cols] * 100
+                )
+
             fig3 = px.bar(
                 df_funnel_cat.head(10), x=cat_col,
                 y=[v2c_col, c2p_col], barmode="group",

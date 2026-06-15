@@ -1,7 +1,7 @@
 # 🛒 E-Commerce Analytics Portfolio Project
-> **End-to-end analytics system built on 110M+ row e-commerce event data**
+> **AI-assisted end-to-end analytics learning project based on 110M+ raw e-commerce events**
 
-> **Showcasing data engineering, SQL analytics, BI dashboarding, and product analytics thinking.**
+> **Practising data preparation, SQL analysis, dashboarding, validation, and business interpretation.**
 
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat&logo=mysql&logoColor=white)
@@ -363,4 +363,3 @@ LinkedIn: [linkedin.com/in/yipcl](https://www.linkedin.com/in/yipcl)
 ---
 
 *Dataset: Kaggle - eCommerce behavior data from multi-category store*
-'''
