@@ -87,9 +87,9 @@ def show():
     col1, col2 = st.columns(2)
 
     with col1:
-        st.subheader("Monthly Stage Participation")
+        st.subheader("Directional Stage Participation — Combined Sample")
         st.warning(
-            "Directional monthly stage-participation view. "
+            "Distinct-user stage counts across the combined analytical sample. "
             "Does not enforce same-session, same-product or "
             "time-ordered journey."
         )
@@ -149,13 +149,13 @@ def show():
         "Buyer-to-Viewer Ratio",
         f"{avg_conv:.2f}%",
         help=(
-            "Monthly distinct buyers divided by monthly distinct viewers. "
+            "Distinct buyers divided by distinct viewers across the combined analytical sample. "
             "Not a sequential conversion rate."
         )
     )
     st.caption(
-        "These ratios compare monthly distinct-user counts at each stage. "
-        "A same-session, time-ordered funnel is required to confirm "
+        "These ratios compare distinct-user counts across the combined analytical sample. "
+        "A same-session, same-product and time-ordered funnel is required to confirm "
         "sequential conversion rates."
     )
 

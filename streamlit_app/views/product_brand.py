@@ -63,22 +63,22 @@ def show():
         st.plotly_chart(fig1, width="stretch")
 
     with col2:
-        st.subheader("Buyer-to-Viewer Ratio by Brand")
+        st.subheader("Purchase-Event-to-View-Event Ratio by Brand")
         if conv_col:
             fig2 = px.bar(
                 df_top.sort_values(conv_col),
                 x=conv_col, y=brand_col, orientation="h",
                 color=conv_col, color_continuous_scale="Purples",
                 text=conv_col,
-                labels={conv_col:"Buyer-to-Viewer Ratio (%)", brand_col:"Brand"},
+                labels={conv_col:"Purchase Events / View Events (%)", brand_col:"Brand"},
                 template="plotly_white",
             )
             fig2.update_traces(texttemplate="%{text:.2f}%", textposition="outside")
             fig2.update_layout(height=420, showlegend=False)
             st.plotly_chart(fig2, width="stretch")
             st.caption(
-                "Monthly distinct buyers divided by monthly distinct viewers "
-                "per brand. Not a sequential conversion rate."
+                "Purchase-event rows divided by view-event rows "
+                "per brand. This is a directional event ratio, not a distinct-user or sequential conversion rate."
             )
 
     st.markdown("---")
