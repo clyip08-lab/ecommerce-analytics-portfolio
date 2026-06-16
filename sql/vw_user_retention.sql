@@ -1,7 +1,6 @@
 -- Exploratory retention prototype only.
 -- October and November users were sampled independently.
--- This view must not be used as a reliable
--- cross-month retention measurement.
+-- This view must not be used as a reliable cross-month retention measurement.
 
 USE ecommerce_analytics;
 
