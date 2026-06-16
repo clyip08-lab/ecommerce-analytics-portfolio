@@ -75,7 +75,7 @@ The results should be interpreted together with the documented methodological li
 
 > **Q3: Where is the largest stage-participation gap?**
 >
-> Monthly distinct-user counts show the largest numerical gap between viewing
+> Combined-sample distinct-user counts show the largest numerical gap between viewing
 > and cart activity.
 >
 > However, the current calculation does not enforce a same-session,
@@ -153,9 +153,9 @@ Lightweight SQL views for selected metric logic
 | Observed purchase value | Approximately $7.4M | Sum of values recorded on purchase events in the analytical sample | Reconcile against full-data aggregates if available |
 | Purchase events | 24,602 | Purchase-event rows, not confirmed orders because the dataset has no `order_id` | Define an order-level rule if session and timestamp data allow |
 | Average purchase-event value | $301.48 | Average value recorded per purchase event; not confirmed AOV | Analyse variation by month, category and product |
-|Combined-sample buyer-to-viewer ratio | 11.74% | Directional ratio of distinct buyers to distinct viewers across the combined analytical sample | Build a same-session, same-product and time-ordered funnel
-|Combined-sample cart-to-viewer ratio | 16.76% | Directional ratio of distinct carters to distinct viewers across the combined analytical sample | Segment by product, traffic source, price and customer type|
-|Combined-sample buyer-to-carter ratio | 70.04% | Buyer and carter groups are not verified as one sequential journey | Validate event order within the same session and product|
+| Combined-sample buyer-to-viewer ratio | 11.74% | Directional ratio of distinct buyers to distinct viewers across the combined analytical sample | Build a same-session, same-product and time-ordered funnel
+| Combined-sample cart-to-viewer ratio | 16.76% | Directional ratio of distinct carters to distinct viewers across the combined analytical sample | Segment by product, traffic source, price and customer type|
+| Combined-sample buyer-to-carter ratio | 70.04% | Buyer and carter groups are not verified as one sequential journey | Validate event order within the same session and product|
 | Electronics share | 75.2% of observed purchase value | High category concentration within the analytical sample | Review margin, supply, seasonality and full-population data before action |
 | Product concentration | 489 products account for 80% of observed purchase value | Concentration among products with observed purchases in the sample | Monitor availability and product-page performance, then validate stability across periods |
 
@@ -244,9 +244,9 @@ ecommerce-analytics-portfolio/
 
 | Live Streamlit Page | Purpose |
 |---|---|
-| Executive Overview | Observed purchase-value metrics, purchase-event trends, UTC activity patterns and directional monthly stage participation |
-| Product and Brand | Observed purchase-value comparisons, brand-level ratios, category concentration and Pareto analysis |
-| Customer Segments | Exploratory RFM segment distribution and directional category stage-participation ratios |
+| Executive Overview | Observed purchase-value metrics, purchase-event trends, UTC activity patterns and directional combined-sample stage participation |
+| Product and Brand | Observed purchase-value comparisons, brand-level purchase-event-to-view-event ratios, category concentration and Pareto analysis |
+| Customer Segments | Exploratory RFM segment distribution and directional category event ratios |
 
 The original retention page has been removed from the live navigation pending
 a redesign of the cross-month sampling methodology.
@@ -267,7 +267,7 @@ a redesign of the cross-month sampling methodology.
 
 - **Pareto Analysis** — measures concentration of observed purchase value among products with purchase events in the analytical sample.
 
-- **Directional Stage-Participation Analysis** — compares monthly distinct-user counts across view, cart and purchase stages; it is not a strict sequential funnel.
+- **Directional Stage-Participation Analysis** — compares distinct-user counts across the combined analytical sample at the view, cart and purchase stages; it is not a strict sequential funnel.
 
 ---
 

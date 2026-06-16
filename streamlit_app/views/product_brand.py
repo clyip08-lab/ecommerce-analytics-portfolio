@@ -25,14 +25,32 @@ def show():
         return
 
     top_n = st.slider("Show Top N Brands", 5, 20, 10)
-    month_options = ["All"]
-    if "month" in df_brands.columns:
-        month_options += sorted(df_brands["month"].dropna().unique().tolist())
-    month_filter = st.selectbox("Month", month_options)
-
     df_b = df_brands.copy()
-    if month_filter != "All" and "month" in df_b.columns:
-        df_b = df_b[df_b["month"] == month_filter]
+
+    if "month" in df_b.columns:
+        month_options = sorted(
+            df_b["month"]
+            .dropna()
+            .unique()
+            .tolist()
+        )
+
+        if month_options:
+            month_filter = st.selectbox(
+                "Month",
+                month_options,
+                index=len(month_options) - 1,
+            )
+
+            df_b = df_b[
+                df_b["month"] == month_filter
+            ].copy()
+
+            st.caption(
+                "Brand comparisons are shown within one "
+                "selected month to avoid mixing separate "
+                "monthly brand records."
+            )
 
     rev_col   = next((c for c in df_b.columns if "revenue"    in c.lower()), None)
     conv_col  = next((c for c in df_b.columns if "conv"       in c.lower() or "rate" in c.lower()), None)
