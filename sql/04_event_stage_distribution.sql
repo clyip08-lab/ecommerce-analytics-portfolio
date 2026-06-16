@@ -1,4 +1,7 @@
--- Overall conversion funnel
+-- Overall event-stage distribution
+-- Counts events and distinct users by event type.
+-- This is not a sequential conversion funnel.
+
 USE ecommerce_analytics;
 SELECT
     event_type,
