@@ -1,3 +1,8 @@
+-- Legacy technical column names are retained for compatibility.
+-- total_orders represents purchase-event rows.
+-- total_revenue represents observed purchase value.
+-- avg_order_value represents average purchase-event value.
+
 USE ecommerce_analytics;
 
 CREATE OR REPLACE VIEW vw_monthly_revenue AS
