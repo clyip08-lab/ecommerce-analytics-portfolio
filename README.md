@@ -196,9 +196,9 @@ ecommerce-analytics-portfolio/
 │
 ├── sql/
 │   ├── 01_schema_check.sql
-│   ├── 02_revenue_by_month.sql
+│   ├── 02_purchase_activity_by_month.sql
 │   ├── 03_top_brands.sql
-│   ├── 04_conversion_funnel.sql
+│   ├── 04_event_stage_distribution.sql
 │   ├── 05_hourly_pattern.sql
 │   ├── vw_monthly_revenue.sql
 │   ├── vw_conversion_funnel.sql
@@ -216,8 +216,10 @@ ecommerce-analytics-portfolio/
 │       ├── customer_segments.py
 │       └── retention_cohort.py
 │
-├── dashboard/
-│   └── ecommerce_dashboard.pbix
+├── Power BI dashboard developed locally.
+│   The PBIX file is not hosted in this repository due to file size.
+│   The public interactive version is available through Streamlit.
+│   
 │
 ├── reports/
 │   └── figures/                      ← 15 exported HTML charts
