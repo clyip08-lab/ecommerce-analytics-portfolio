@@ -1,3 +1,8 @@
+-- Exploratory retention prototype only.
+-- October and November users were sampled independently.
+-- This view must not be used as a reliable
+-- cross-month retention measurement.
+
 USE ecommerce_analytics;
 
 CREATE OR REPLACE VIEW vw_user_retention AS
