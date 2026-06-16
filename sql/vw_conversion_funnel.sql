@@ -1,3 +1,7 @@
+-- Directional monthly stage-participation analysis.
+-- The user groups are not confirmed as a same-session, same-product, time-ordered journey.
+-- The legacy view and column names are retained to avoid breaking existing project outputs.
+
 USE ecommerce_analytics;
 
 CREATE OR REPLACE VIEW vw_conversion_funnel AS
