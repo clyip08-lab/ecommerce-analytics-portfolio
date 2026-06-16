@@ -15,7 +15,8 @@
 ## Live Demo
 
 **[View Live Streamlit Dashboard](https://clyip08-lab-ecommerce-analytics-portfol-streamlit-appapp-g6xeev.streamlit.app)**
-
+- Power BI Dashboard: [View PDF](reports/ecommerce_dashboard.pdf)
+The Power BI dashboard was developed locally. The PBIX file is not hosted in this repository due to file size; a PDF preview is provided.
 ---
 
 ## Project Overview
@@ -152,9 +153,9 @@ Lightweight SQL views for selected metric logic
 | Observed purchase value | Approximately $7.4M | Sum of values recorded on purchase events in the analytical sample | Reconcile against full-data aggregates if available |
 | Purchase events | 24,602 | Purchase-event rows, not confirmed orders because the dataset has no `order_id` | Define an order-level rule if session and timestamp data allow |
 | Average purchase-event value | $301.48 | Average value recorded per purchase event; not confirmed AOV | Analyse variation by month, category and product |
-| Monthly buyer-to-viewer ratio | 11.72% | Directional ratio of distinct monthly buyers to viewers | Build a same-session, same-product and time-ordered funnel |
-| Monthly cart-to-viewer ratio | 16.73% | The largest numerical stage-participation gap appears before cart | Segment by product, traffic source, price and customer type |
-| Monthly buyer-to-carter ratio | 78.79% | Buyer and carter totals are not verified as one sequential journey | Validate event order within the same session and product |
+|Combined-sample buyer-to-viewer ratio | 11.74% | Directional ratio of distinct buyers to distinct viewers across the combined analytical sample | Build a same-session, same-product and time-ordered funnel
+|Combined-sample cart-to-viewer ratio | 16.76% | Directional ratio of distinct carters to distinct viewers across the combined analytical sample | Segment by product, traffic source, price and customer type|
+|Combined-sample buyer-to-carter ratio | 70.04% | Buyer and carter groups are not verified as one sequential journey | Validate event order within the same session and product|
 | Electronics share | 75.2% of observed purchase value | High category concentration within the analytical sample | Review margin, supply, seasonality and full-population data before action |
 | Product concentration | 489 products account for 80% of observed purchase value | Concentration among products with observed purchases in the sample | Monitor availability and product-page performance, then validate stability across periods |
 
@@ -215,13 +216,9 @@ ecommerce-analytics-portfolio/
 │       ├── product_brand.py
 │       ├── customer_segments.py
 │       └── retention_cohort.py
-│
-├── Power BI dashboard developed locally.
-│   The PBIX file is not hosted in this repository due to file size.
-│   The public interactive version is available through Streamlit.
 │   
-│
 ├── reports/
+│   ├── ecommerce_dashboard.pdf
 │   └── figures/                      ← 15 exported HTML charts
 │
 ├── .gitignore
